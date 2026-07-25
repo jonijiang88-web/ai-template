@@ -2,6 +2,30 @@ import { createAdminClient } from '@/app/_lib/supabase/admin'
 import { sendEmail } from '@/app/_service/mail'
 import { createHash, randomBytes } from 'crypto'
 
+/** 邮件确认页面的支持语言。 */
+type ConfirmLocale = 'en' | 'zh-CN'
+
+/** 确认邮件各语言的模板文案。 */
+const confirmEmailMessages: Record<ConfirmLocale, {
+  subject: string
+  body: string
+  buttonText: string
+  footer: string
+}> = {
+  'zh-CN': {
+    subject: '确认你的邮箱地址',
+    body: '感谢注册！请点击下方按钮确认你的邮箱地址。',
+    buttonText: '确认邮箱',
+    footer: '如果你没有创建账号，请忽略此邮件。',
+  },
+  en: {
+    subject: 'Confirm your email address',
+    body: 'Thanks for signing up! Click the button below to confirm your email address.',
+    buttonText: 'Confirm email',
+    footer: 'If you did not create an account, please ignore this email.',
+  },
+}
+
 /**
  * 生成确认 token 并存储到 verification_tokens 表。
  */
@@ -26,20 +50,12 @@ async function createToken(email: string): Promise<string> {
  */
 function buildConfirmEmail(
   confirmUrl: string,
-  locale: 'en' | 'zh-CN',
+  locale: ConfirmLocale,
 ): { subject: string; html: string } {
-  const isEn = locale === 'en'
-  const title = isEn ? 'Confirm your email address' : '确认你的邮箱地址'
-  const body = isEn
-    ? 'Thanks for signing up! Click the button below to confirm your email address.'
-    : '感谢注册！请点击下方按钮确认你的邮箱地址。'
-  const buttonText = isEn ? 'Confirm email' : '确认邮箱'
-  const footer = isEn
-    ? 'If you did not create an account, please ignore this email.'
-    : '如果你没有创建账号，请忽略此邮件。'
+  const msg = confirmEmailMessages[locale] ?? confirmEmailMessages['zh-CN']
 
   return {
-    subject: title,
+    subject: msg.subject,
     html: `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -47,18 +63,18 @@ function buildConfirmEmail(
     <tr><td align="center" style="padding:40px 20px">
       <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden">
         <tr><td style="padding:40px 32px 32px">
-          <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#1a1a1a">${title}</h1>
-          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b6b6b">${body}</p>
+          <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#1a1a1a">${msg.subject}</h1>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b6b6b">${msg.body}</p>
           <table cellpadding="0" cellspacing="0">
             <tr>
               <td style="background:#ea580c;border-radius:6px;padding:0">
-                <a href="${confirmUrl}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none">${buttonText}</a>
+                <a href="${confirmUrl}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none">${msg.buttonText}</a>
               </td>
             </tr>
           </table>
         </td></tr>
         <tr><td style="padding:0 32px 32px">
-          <p style="margin:0;font-size:12px;color:#a0a0a0">${footer}</p>
+          <p style="margin:0;font-size:12px;color:#a0a0a0">${msg.footer}</p>
         </td></tr>
       </table>
     </td></tr>
@@ -74,7 +90,7 @@ function buildConfirmEmail(
  * 调用 Supabase Admin API 创建用户（不自动发邮件），
  * 然后通过 Resend 发送自定义多语言确认邮件。
  */
-export async function signup(email: string, password: string, locale: 'en' | 'zh-CN') {
+export async function signup(email: string, password: string, locale: ConfirmLocale = 'zh-CN') {
   const supabase = createAdminClient()
 
   const { data, error } = await supabase.auth.admin.createUser({
