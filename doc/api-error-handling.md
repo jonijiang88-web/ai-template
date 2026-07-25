@@ -6,6 +6,7 @@
 
 - `BizException` 被捕获后返回结构化 JSON `{ error: { code, message } }` 及对应的 4xx 状态码
 - 未知异常被捕获后返回 `{ error: { code: 'INTERNAL_ERROR', message: '服务暂时不可用，请稍后重试' } }` 及 500 状态码，**不泄漏**原始错误细节
+- 错误消息根据 `Accept-Language` 头自动切换中/英文，翻译文本来自 `app/_lib/i18n/messages/*.json`
 
 ## 使用方式
 

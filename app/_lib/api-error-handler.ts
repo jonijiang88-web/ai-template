@@ -1,34 +1,14 @@
 import { BizException } from './BizException'
 import { detectLocaleFromRequest, type Locale } from './locale'
-
-/**
- * 各语言错误消息字典。
- */
-const errorMessages: Record<Locale, Record<string, string>> = {
-  zh: {
-    UNAUTHORIZED: '未登录',
-    VALIDATION_ERROR: '请求参数校验失败',
-    RATE_LIMITED: '请求太频繁，请稍后再试',
-    INVALID_JSON: '请求体不是合法的 JSON',
-    INTERNAL_ERROR: '服务暂时不可用，请稍后重试',
-    MESSAGE_REJECTED: '消息包含敏感词',
-  },
-  en: {
-    UNAUTHORIZED: 'Not authenticated',
-    VALIDATION_ERROR: 'Validation failed',
-    RATE_LIMITED: 'Too many requests. Please try again later.',
-    INVALID_JSON: 'Request body is not valid JSON',
-    INTERNAL_ERROR: 'Service temporarily unavailable. Please try again later.',
-    MESSAGE_REJECTED: 'Message contains rejected content',
-  },
-}
+import { t } from './i18n/loader'
 
 /**
  * 根据 locale 获取翻译后的错误消息。
  * 找不到翻译时回退到原始消息。
  */
 function translateError(code: string, locale: Locale, fallback: string): string {
-  return errorMessages[locale]?.[code] ?? fallback
+  // locale 'zh' → 'zh-CN'（由 loader 内部处理）
+  return t(locale, 'ApiError', code, fallback)
 }
 
 /**

@@ -34,7 +34,6 @@
   },
   "Email": {
     "confirmSubject": "Confirm your email address",
-    "confirmTitle": "Confirm your email",
     "confirmBody": "Thanks for signing up! Click the button below to confirm your email address.",
     "confirmButton": "Confirm email",
     "confirmFooter": "If you did not create an account, please ignore this email.",
@@ -47,5 +46,13 @@
     "inputPlaceholder": "Type a message...",
     "send": "Send",
     "sendFailed": "Something went wrong. Please try again."
+  },
+  "ApiError": {
+    "UNAUTHORIZED": "Not authenticated",
+    "VALIDATION_ERROR": "Validation failed",
+    "RATE_LIMITED": "Too many requests. Please try again later.",
+    "INVALID_JSON": "Request body is not valid JSON",
+    "INTERNAL_ERROR": "Service temporarily unavailable. Please try again later.",
+    "MESSAGE_REJECTED": "Message contains rejected content"
   }
 }

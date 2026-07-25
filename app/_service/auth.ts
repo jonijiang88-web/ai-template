@@ -1,30 +1,7 @@
 import { createAdminClient } from '@/app/_lib/supabase/admin'
 import { sendEmail } from '@/app/_service/mail'
 import { createHash, randomBytes } from 'crypto'
-
-/** 邮件确认页面的支持语言。 */
-type ConfirmLocale = 'en' | 'zh-CN'
-
-/** 确认邮件各语言的模板文案。 */
-const confirmEmailMessages: Record<ConfirmLocale, {
-  subject: string
-  body: string
-  buttonText: string
-  footer: string
-}> = {
-  'zh-CN': {
-    subject: '确认你的邮箱地址',
-    body: '感谢注册！请点击下方按钮确认你的邮箱地址。',
-    buttonText: '确认邮箱',
-    footer: '如果你没有创建账号，请忽略此邮件。',
-  },
-  en: {
-    subject: 'Confirm your email address',
-    body: 'Thanks for signing up! Click the button below to confirm your email address.',
-    buttonText: 'Confirm email',
-    footer: 'If you did not create an account, please ignore this email.',
-  },
-}
+import { loadMessages } from '@/app/_lib/i18n/loader'
 
 /**
  * 生成确认 token 并存储到 verification_tokens 表。
@@ -45,17 +22,25 @@ async function createToken(email: string): Promise<string> {
   return token
 }
 
+/** 邮件确认页面的支持语言。 */
+type ConfirmLocale = 'en' | 'zh-CN'
+
 /**
  * 生成多语言确认邮件 HTML。
+ * 文案从 next-intl 的 JSON 文件加载，与前端共享同一套翻译。
  */
 function buildConfirmEmail(
   confirmUrl: string,
   locale: ConfirmLocale,
 ): { subject: string; html: string } {
-  const msg = confirmEmailMessages[locale] ?? confirmEmailMessages['zh-CN']
+  const msgs = loadMessages(locale)
+  const subject = msgs.Email?.confirmSubject ?? 'Confirm your email address'
+  const body = msgs.Email?.confirmBody ?? ''
+  const buttonText = msgs.Email?.confirmButton ?? 'Confirm email'
+  const footer = msgs.Email?.confirmFooter ?? ''
 
   return {
-    subject: msg.subject,
+    subject,
     html: `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -63,18 +48,18 @@ function buildConfirmEmail(
     <tr><td align="center" style="padding:40px 20px">
       <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden">
         <tr><td style="padding:40px 32px 32px">
-          <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#1a1a1a">${msg.subject}</h1>
-          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b6b6b">${msg.body}</p>
+          <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#1a1a1a">${subject}</h1>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b6b6b">${body}</p>
           <table cellpadding="0" cellspacing="0">
             <tr>
               <td style="background:#ea580c;border-radius:6px;padding:0">
-                <a href="${confirmUrl}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none">${msg.buttonText}</a>
+                <a href="${confirmUrl}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none">${buttonText}</a>
               </td>
             </tr>
           </table>
         </td></tr>
         <tr><td style="padding:0 32px 32px">
-          <p style="margin:0;font-size:12px;color:#a0a0a0">${msg.footer}</p>
+          <p style="margin:0;font-size:12px;color:#a0a0a0">${footer}</p>
         </td></tr>
       </table>
     </td></tr>
