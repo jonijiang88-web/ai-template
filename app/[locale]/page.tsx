@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 justify-center px-6 py-16 sm:py-24">
       <main className="flex w-full max-w-xl flex-col items-start gap-5">
-        <h1 className="text-3xl font-semibold text-foreground">{t('title')}</h1>
+        <h1 className="text-3xl font-semibold text-foreground">{t('title')} (test)</h1>
         <p className="max-w-md text-base leading-6 text-muted">{t('description')}</p>
         <Link
           href="/chat"
