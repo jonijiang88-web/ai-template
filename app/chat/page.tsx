@@ -1,11 +1,13 @@
+import { redirect } from 'next/navigation'
+import { auth } from '../_auth/auth'
 import ChatBox from './_components/ChatBox'
 
-export default function ChatPage() {
+export default async function ChatPage() {
+  const session = await auth()
+  if (!session?.user) redirect('/api/auth/signin')
+
   return (
-    <div className="flex flex-col h-dvh">
-      <header className="border-b px-6 py-4">
-        <h1 className="text-lg font-semibold">ChatBox</h1>
-      </header>
+    <div className="flex flex-1">
       <ChatBox />
     </div>
   )

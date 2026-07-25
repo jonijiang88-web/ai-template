@@ -1,29 +1,21 @@
 import 'reflect-metadata'
-import { getDataSource } from '@/lib/data-source'
-import { Message } from '@/lib/entity/Message'
-
-async function getRepo() {
-  const ds = await getDataSource()
-  return ds.getRepository(Message)
-}
+import { auth } from '../../_auth/auth'
+import { getMessages, sendMessage } from '../../_service/chat'
 
 export async function GET() {
-  const repo = await getRepo()
-  const messages = await repo.find({ order: { id: 'ASC' } })
+  const session = await auth()
+  if (!session?.user) return Response.json({ error: '未登录' }, { status: 401 })
+
+  const messages = await getMessages()
   return Response.json({ messages })
 }
 
 export async function POST(request: Request) {
+  const session = await auth()
+  if (!session?.user) return Response.json({ error: '未登录' }, { status: 401 })
+
   const { message } = await request.json()
-  const repo = await getRepo()
-
-  const userMsg = repo.create({ role: 'user', content: message })
-  await repo.save(userMsg)
-
-  const reply = `你说了: "${message}"`
-
-  const botMsg = repo.create({ role: 'bot', content: reply })
-  await repo.save(botMsg)
+  const reply = await sendMessage(message)
 
   return Response.json({ reply })
 }
