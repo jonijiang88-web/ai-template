@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // 使用 vi.hoisted 确保 mock 变量在 vi.mock 提升前已定义
-const { mockAuth, mockGetMessages, mockSendMessage } = vi.hoisted(() => {
+const { mockCreateServerClient, mockGetUser, mockGetMessages, mockSendMessage } = vi.hoisted(() => {
   return {
-    mockAuth: vi.fn(),
+    mockCreateServerClient: vi.fn(),
+    mockGetUser: vi.fn(),
     mockGetMessages: vi.fn(),
     mockSendMessage: vi.fn(),
   }
 })
 
-// 模拟认证模块
-vi.mock('../../_auth/auth', () => ({
-  auth: mockAuth,
+// 模拟 Supabase 服务端客户端创建
+vi.mock('@/utils/supabase/server', () => ({
+  createClient: mockCreateServerClient,
 }))
 
 // 模拟聊天服务模块
@@ -40,6 +41,20 @@ function createInvalidJsonRequest(): Request {
   })
 }
 
+/** 创建模拟的 Supabase 客户端，模拟 getUser 方法 */
+function createMockSupabaseClient(user: { id: string; email?: string } | null) {
+  const result = user
+    ? { data: { user }, error: null }
+    : { data: { user: null }, error: new Error('Not authenticated') }
+
+  mockGetUser.mockResolvedValue(result)
+
+  return {
+    auth: { getUser: mockGetUser },
+    from: vi.fn(),
+  }
+}
+
 describe('app/api/chat 路由', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -47,8 +62,8 @@ describe('app/api/chat 路由', () => {
 
   describe('GET /', () => {
     it('未登录时返回 401 及结构化错误', async () => {
-      // 模拟 auth() 返回 null（未登录）
-      mockAuth.mockResolvedValue(null)
+      // 模拟 createClient 返回模拟客户端（无用户）
+      mockCreateServerClient.mockResolvedValue(createMockSupabaseClient(null))
 
       const res = await GET()
 
@@ -56,105 +71,95 @@ describe('app/api/chat 路由', () => {
       expect(res.status).toBe(401)
       // 验证：返回结构化 JSON { error: { code, message } }
       const body = await res.json()
+      // 验证：未登录响应包含标准错误编码和文案
       expect(body).toEqual({
         error: { code: 'UNAUTHORIZED', message: '未登录' },
       })
     })
 
-    it('已登录但缺少邮箱时返回 401', async () => {
-      // 模拟 auth() 返回有用户但无 email
-      mockAuth.mockResolvedValue({ user: { name: 'test' } })
-
-      const res = await GET()
-
-      // 验证：状态码为 401
-      expect(res.status).toBe(401)
-      // 验证：返回 UNAUTHORIZED 错误
-      const body = await res.json()
-      expect(body).toEqual({
-        error: { code: 'UNAUTHORIZED', message: '用户邮箱不可用' },
-      })
-      // 验证：getMessages 未被调用（提前返回）
-      expect(mockGetMessages).not.toHaveBeenCalled()
-    })
-
-    it('已登录且带邮箱时通过 email 查询消息列表', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
+    it('已登录时通过 auth.uid() 查询消息列表', async () => {
+      // 模拟 createClient 返回模拟客户端（已登录用户）
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
       // 模拟 getMessages 返回消息数组
-      const fakeMessages = [{ id: 1, userId: 'test@demo.local', content: '你好' }]
+      const fakeMessages = [
+        { id: '1', user_id: 'user-uuid', role: 'user', content: '你好', created_at: '2026-01-01T00:00:00Z' },
+      ]
       mockGetMessages.mockResolvedValue(fakeMessages)
 
       const res = await GET()
 
       // 验证：状态码为 200
       expect(res.status).toBe(200)
-      // 验证：getMessages 被调用时传入了用户的 email 作为 userId
-      expect(mockGetMessages).toHaveBeenCalledWith('test@demo.local')
+      // 验证：getMessages 被调用时传入 supabase 客户端和 user.id（而非 email）
+      expect(mockGetMessages).toHaveBeenCalledWith(
+        expect.objectContaining({ auth: { getUser: mockGetUser } }),
+        'user-uuid',
+      )
       // 验证：返回的 JSON 包含 messages 字段
       const body = await res.json()
+      // 验证：响应消息列表等于服务层返回值
       expect(body).toEqual({ messages: fakeMessages })
+    })
+
+    it('getUser 返回 error 时视为未登录', async () => {
+      mockCreateServerClient.mockResolvedValue(createMockSupabaseClient(null))
+
+      const res = await GET()
+
+      // 验证：状态码为 401
+      expect(res.status).toBe(401)
+      // 验证：getMessages 未被调用（提前返回）
+      expect(mockGetMessages).not.toHaveBeenCalled()
     })
   })
 
   describe('POST /', () => {
     it('未登录时返回 401 及结构化错误', async () => {
-      // 模拟 auth() 返回 null（未登录）
-      mockAuth.mockResolvedValue(null)
+      mockCreateServerClient.mockResolvedValue(createMockSupabaseClient(null))
 
       const res = await POST(createRequest({ message: 'hello' }))
 
       // 验证：状态码为 401
       expect(res.status).toBe(401)
-      // 验证：返回结构化 JSON { error: { code, message } }
+      // 验证：返回结构化 JSON
       const body = await res.json()
+      // 验证：未登录响应包含标准错误编码和文案
       expect(body).toEqual({
         error: { code: 'UNAUTHORIZED', message: '未登录' },
       })
     })
 
-    it('已登录但缺少邮箱时返回 401', async () => {
-      // 模拟 auth() 返回有用户但无 email
-      mockAuth.mockResolvedValue({ user: { name: 'test' } })
-
-      const res = await POST(createRequest({ message: 'hello' }))
-
-      // 验证：状态码为 401
-      expect(res.status).toBe(401)
-      // 验证：返回 UNAUTHORIZED 错误
-      const body = await res.json()
-      expect(body).toEqual({
-        error: { code: 'UNAUTHORIZED', message: '用户邮箱不可用' },
-      })
-      // 验证：sendMessage 未被调用（提前返回）
-      expect(mockSendMessage).not.toHaveBeenCalled()
-    })
-
     it('非法 JSON 请求体返回 400 及结构化错误', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
 
       const res = await POST(createInvalidJsonRequest())
 
       // 验证：状态码为 400
       expect(res.status).toBe(400)
-      // 验证：返回结构化 JSON { error: { code, message } }
+      // 验证：返回结构化 JSON
       const body = await res.json()
+      // 验证：非法 JSON 响应使用对应错误编码
       expect(body).toEqual({
         error: { code: 'INVALID_JSON', message: '请求体不是合法的 JSON' },
       })
     })
 
     it('缺失 message 字段时返回 400 及结构化错误', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
 
       const res = await POST(createRequest({}))
 
       // 验证：状态码为 400
       expect(res.status).toBe(400)
-      // 验证：返回结构化 JSON { error: { code, message } }
+      // 验证：返回 VALIDATION_ERROR
       const body = await res.json()
+      // 验证：缺失 message 时返回统一校验错误
       expect(body).toEqual({
         error: {
           code: 'VALIDATION_ERROR',
@@ -163,16 +168,17 @@ describe('app/api/chat 路由', () => {
       })
     })
 
-    it('message 为空字符串（或仅空白字符）时返回 400 及结构化错误', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
+    it('message 为空字符串（或仅空白）时返回 400', async () => {
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
 
       const res = await POST(createRequest({ message: '   ' }))
 
       // 验证：状态码为 400
       expect(res.status).toBe(400)
-      // 验证：返回结构化 JSON { error: { code, message } }
       const body = await res.json()
+      // 验证：空白 message 返回统一校验错误
       expect(body).toEqual({
         error: {
           code: 'VALIDATION_ERROR',
@@ -181,16 +187,17 @@ describe('app/api/chat 路由', () => {
       })
     })
 
-    it('message 超过 4000 字符时返回 400 及结构化错误', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
+    it('message 超过 4000 字符时返回 400', async () => {
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
 
       const res = await POST(createRequest({ message: 'x'.repeat(4001) }))
 
       // 验证：状态码为 400
       expect(res.status).toBe(400)
-      // 验证：返回结构化 JSON { error: { code, message } }
       const body = await res.json()
+      // 验证：超长 message 返回统一校验错误
       expect(body).toEqual({
         error: {
           code: 'VALIDATION_ERROR',
@@ -200,26 +207,31 @@ describe('app/api/chat 路由', () => {
     })
 
     it('合法消息时调用 sendMessage 并返回 reply', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
-      // 模拟 sendMessage 返回回复内容
-      mockSendMessage.mockResolvedValue('你说了: "hello"')
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
+      mockSendMessage.mockResolvedValue('You said: "hello"')
 
       const res = await POST(createRequest({ message: 'hello' }))
 
       // 验证：状态码为 200
       expect(res.status).toBe(200)
-      // 验证：sendMessage 被调用时传入了用户 email 和消息内容
-      expect(mockSendMessage).toHaveBeenCalledWith('test@demo.local', 'hello')
-      // 验证：返回的 JSON 包含 reply 字段且值为预期的回复内容
+      // 验证：sendMessage 被调用时传入 user.id
+      expect(mockSendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ auth: { getUser: mockGetUser } }),
+        'user-uuid',
+        'hello',
+      )
+      // 验证：返回的 JSON 包含 reply
       const body = await res.json()
-      expect(body).toEqual({ reply: '你说了: "hello"' })
+      // 验证：成功响应返回服务层生成的回复
+      expect(body).toEqual({ reply: 'You said: "hello"' })
     })
 
-    it('服务层抛出 BizException 时返回指定状态码与编码', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
-      // 模拟 sendMessage 抛出 BizException（模拟业务拒绝）
+    it('服务层抛出 BizException 时返回指定状态码', async () => {
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
       const { BizException } = await import('../../_lib/BizException')
       mockSendMessage.mockRejectedValue(
         new BizException('MESSAGE_REJECTED', '消息包含敏感词', 422),
@@ -229,25 +241,25 @@ describe('app/api/chat 路由', () => {
 
       // 验证：状态码为 422
       expect(res.status).toBe(422)
-      // 验证：返回结构化 JSON { error: { code, message } }
       const body = await res.json()
+      // 验证：业务异常的编码和文案被完整保留
       expect(body).toEqual({
         error: { code: 'MESSAGE_REJECTED', message: '消息包含敏感词' },
       })
     })
 
     it('服务层抛出未知异常时返回 500 且不泄漏原始错误', async () => {
-      // 模拟 auth() 返回已登录用户（含 email）
-      mockAuth.mockResolvedValue({ user: { name: 'test', email: 'test@demo.local' } })
-      // 模拟 sendMessage 抛出未知 Error
-      mockSendMessage.mockRejectedValue(new Error('数据库连接超时'))
+      mockCreateServerClient.mockResolvedValue(
+        createMockSupabaseClient({ id: 'user-uuid', email: 'test@example.com' }),
+      )
+      mockSendMessage.mockRejectedValue(new Error('Supabase 连接超时'))
 
       const res = await POST(createRequest({ message: 'hello' }))
 
       // 验证：状态码为 500
       expect(res.status).toBe(500)
-      // 验证：返回通用错误结构，不包含原始错误消息
       const body = await res.json()
+      // 验证：未知异常转换为不暴露内部信息的标准响应
       expect(body).toEqual({
         error: {
           code: 'INTERNAL_ERROR',
@@ -255,7 +267,7 @@ describe('app/api/chat 路由', () => {
         },
       })
       // 验证：原始错误消息未被泄漏
-      expect(body.error.message).not.toContain('数据库连接超时')
+      expect(body.error.message).not.toContain('Supabase 连接超时')
     })
   })
 })

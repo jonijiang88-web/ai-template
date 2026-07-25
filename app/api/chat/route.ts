@@ -1,6 +1,5 @@
-import 'reflect-metadata'
 import { z } from 'zod'
-import { auth } from '../../_auth/auth'
+import { createClient } from '@/utils/supabase/server'
 import { getMessages, sendMessage } from '../../_service/chat'
 import { BizException } from '../../_lib/BizException'
 import { withApiErrorHandler } from '../../_lib/api-error-handler'
@@ -14,36 +13,33 @@ const postSchema = z.object({
 })
 
 /**
- * 获取聊天消息列表（需登录 + 邮箱作为 userId）。
- * 认证失败或邮箱不可用时抛出 BizException，由 withApiErrorHandler 统一处理。
+ * 获取聊天消息列表（需登录）。
+ * 使用 Supabase auth.getUser() 鉴权，userId 由服务端获取，不接受客户端传入。
+ * 认证失败时抛出 BizException，由 withApiErrorHandler 统一处理。
  */
 async function getHandler() {
-  const session = await auth()
-  if (!session?.user) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
     throw new BizException('UNAUTHORIZED', '未登录', 401)
   }
-  const userId = session.user.email
-  if (!userId) {
-    throw new BizException('UNAUTHORIZED', '用户邮箱不可用', 401)
-  }
 
-  const messages = await getMessages(userId)
+  const messages = await getMessages(supabase, user.id)
   return Response.json({ messages })
 }
 
 /**
- * 发送聊天消息（需登录 + 邮箱作为 userId + 请求体校验）。
- * 认证失败、邮箱不可用、请求体非法时均抛出 BizException，
- * 由 withApiErrorHandler 统一处理。
+ * 发送聊天消息（需登录 + 请求体校验）。
+ * 使用 Supabase auth.getUser() 鉴权，userId 由服务端获取。
+ * 认证失败、请求体非法时均抛出 BizException，由 withApiErrorHandler 统一处理。
  */
 async function postHandler(request?: Request) {
-  const session = await auth()
-  if (!session?.user) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
     throw new BizException('UNAUTHORIZED', '未登录', 401)
-  }
-  const userId = session.user.email
-  if (!userId) {
-    throw new BizException('UNAUTHORIZED', '用户邮箱不可用', 401)
   }
 
   // 尝试解析 JSON，若失败则抛出 BizException
@@ -67,7 +63,7 @@ async function postHandler(request?: Request) {
     )
   }
 
-  const reply = await sendMessage(userId, result.data.message)
+  const reply = await sendMessage(supabase, user.id, result.data.message)
 
   return Response.json({ reply })
 }

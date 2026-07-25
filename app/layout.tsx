@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./_components/NavBar";
-import { AuthProvider } from "./_components/AuthProvider";
-import { auth } from "./_auth/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,23 +18,25 @@ export const metadata: Metadata = {
   description: "Learning Next.js",
 };
 
-export default async function RootLayout({
+/**
+ * 根布局组件。
+ *
+ * 移除了 NextAuth SessionProvider，改为纯 NavBar + children 结构。
+ * 用户认证状态由 NavBar 内部通过 Supabase 客户端获取。
+ */
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth()
-
   return (
     <html
       lang="zh"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider session={session}>
-          <NavBar />
-          {children}
-        </AuthProvider>
+        <NavBar />
+        {children}
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
 import { useReducer, useRef, useEffect } from 'react'
 
 type Message = {
-  role: 'user' | 'bot'
+  role: 'user' | 'assistant'
   content: string
 }
 
@@ -38,19 +38,25 @@ function chatReducer(state: State, action: Action): State {
     case 'SEND_SUCCESS':
       return {
         ...state,
-        messages: [...state.messages, { role: 'bot', content: action.reply }],
+        messages: [...state.messages, { role: 'assistant', content: action.reply }],
         loading: false,
       }
 
     case 'SEND_ERROR':
       return {
         ...state,
-        messages: [...state.messages, { role: 'bot', content: '出错了，请重试' }],
+        messages: [...state.messages, { role: 'assistant', content: '出错了，请重试' }],
         loading: false,
       }
   }
 }
 
+/**
+ * ChatBox 客户端组件 —— 聊天消息列表与发送表单。
+ *
+ * 从 /api/chat 读取历史消息，通过 POST /api/chat 发送新消息。
+ * 前端 role 使用 'assistant'（替代旧版 'bot'），与 Supabase messages 表一致。
+ */
 export default function ChatBox() {
   const [state, dispatch] = useReducer(chatReducer, {
     messages: [],
@@ -62,7 +68,16 @@ export default function ChatBox() {
   useEffect(() => {
     fetch('/api/chat')
       .then(res => res.json())
-      .then(data => dispatch({ type: 'LOAD_HISTORY', messages: data.messages }))
+      .then(data => {
+        if (data.messages) {
+          // 将数据层 role 映射为前端 Message 类型
+          const mapped = data.messages.map((m: { role: string; content: string }) => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          }))
+          dispatch({ type: 'LOAD_HISTORY', messages: mapped })
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -83,24 +98,28 @@ export default function ChatBox() {
         body: JSON.stringify({ message: state.input }),
       })
       const data = await res.json()
-      dispatch({ type: 'SEND_SUCCESS', reply: data.reply })
+      if (data.reply) {
+        dispatch({ type: 'SEND_SUCCESS', reply: data.reply })
+      } else {
+        dispatch({ type: 'SEND_ERROR' })
+      }
     } catch {
       dispatch({ type: 'SEND_ERROR' })
     }
   }
 
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto border rounded-xl shadow-sm">
+    <div className="flex flex-col h-full max-w-2xl mx-auto border border-[#e5e5e5] rounded-lg shadow-sm">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {state.messages.length === 0 && (
-          <p className="text-center text-zinc-400 mt-20">开始聊天吧！</p>
+          <p className="text-center text-[#a0a0a0] mt-20 text-sm">Start chatting!</p>
         )}
         {state.messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[70%] rounded-xl px-4 py-2 ${
+            <div className={`max-w-[70%] rounded-lg px-4 py-2 text-sm ${
               msg.role === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-100 text-zinc-800'
+                ? 'bg-[#5e6ad2] text-white'
+                : 'bg-[#f8f8f8] text-[#1a1a1a]'
             }`}>
               {msg.content}
             </div>
@@ -108,28 +127,30 @@ export default function ChatBox() {
         ))}
         {state.loading && (
           <div className="flex justify-start">
-            <div className="bg-zinc-100 rounded-xl px-4 py-2 text-zinc-400">
-              正在输入...
+            <div className="bg-[#f8f8f8] rounded-lg px-4 py-2 text-sm text-[#a0a0a0]">
+              Typing...
             </div>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="border-t border-[#e5e5e5] p-4 flex gap-2">
         <input
           value={state.input}
           onChange={e => dispatch({ type: 'SET_INPUT', value: e.target.value })}
-          placeholder="输入消息..."
-          className="flex-1 rounded-lg border px-4 py-2 outline-none focus:border-blue-500"
+          placeholder="Type a message..."
+          className="flex-1 rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] disabled:opacity-40"
+          disabled={state.loading}
         />
         <button
           type="submit"
           disabled={state.loading || !state.input.trim()}
-          className="bg-blue-600 text-white rounded-lg px-6 py-2 disabled:opacity-50 hover:bg-blue-700"
+          className="rounded-md bg-[#5e6ad2] text-white px-5 py-2 text-sm font-medium transition hover:bg-[#4f5ad0] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
         >
-          发送
+          Send
         </button>
       </form>
+      <div ref={bottomRef} />
     </div>
   )
 }

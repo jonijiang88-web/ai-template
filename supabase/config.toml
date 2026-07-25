@@ -1,0 +1,10 @@
+# Supabase CLI 项目配置
+# 参考：https://supabase.com/docs/guides/local-development/overview
+
+project_id = "hello-next-js"
+
+[auth]
+enabled = true
+
+[api]
+enabled = true

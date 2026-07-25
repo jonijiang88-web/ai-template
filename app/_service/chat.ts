@@ -1,29 +1,69 @@
-import { getChatRepo } from '../_repository/chat'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
- * 获取指定用户的消息列表，按 id 升序排列。
- * @param userId - 用户唯一标识（当前使用 session.user.email）
+ * 消息记录类型，对应 supabase/migrations 中 public.messages 表。
  */
-export async function getMessages(userId: string) {
-  const repo = await getChatRepo()
-  return repo.find({ where: { userId }, order: { id: 'ASC' } })
+export type MessageRecord = {
+  id: string
+  user_id: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
 }
 
 /**
- * 发送消息（创建 user 消息 + 自动回复 bot 消息），两条消息均绑定同一 userId。
- * @param userId - 用户唯一标识
- * @param content - 用户消息内容
+ * 获取指定用户的消息列表，按 created_at 升序排列。
+ *
+ * userId 由服务端调用方（Route Handler）从 auth.getUser() 获取，
+ * 应用层不得接受客户端传入的 userId。
+ *
+ * @param supabase - Supabase 服务端客户端实例
+ * @param userId   - 用户 UUID（由 auth.getUser() 提供）
+ * @returns 消息记录数组
+ */
+export async function getMessages(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<MessageRecord[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    throw error
+  }
+
+  return data ?? []
+}
+
+/**
+ * 发送消息：一次性插入 user 消息和 assistant 自动回复两条记录。
+ *
+ * userId 由服务端调用方（Route Handler）从 auth.getUser() 获取，
+ * 应用层不得接受客户端传入的 userId。RLS 是数据隔离的主要保障。
+ *
+ * @param supabase - Supabase 服务端客户端实例
+ * @param userId   - 用户 UUID（由 auth.getUser() 提供）
+ * @param content  - 用户消息内容
  * @returns 机器人回复文本
  */
-export async function sendMessage(userId: string, content: string) {
-  const repo = await getChatRepo()
+export async function sendMessage(
+  supabase: SupabaseClient,
+  userId: string,
+  content: string,
+): Promise<string> {
+  const reply = `You said: "${content}"`
 
-  const userMsg = repo.create({ role: 'user', content, userId })
-  await repo.save(userMsg)
+  const { error } = await supabase.from('messages').insert([
+    { user_id: userId, role: 'user', content },
+    { user_id: userId, role: 'assistant', content: reply },
+  ])
 
-  const reply = `你说了: "${content}"`
-  const botMsg = repo.create({ role: 'bot', content: reply, userId })
-  await repo.save(botMsg)
+  if (error) {
+    throw error
+  }
 
   return reply
 }

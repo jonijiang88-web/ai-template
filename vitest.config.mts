@@ -8,8 +8,12 @@ export default defineConfig({
     },
   },
   test: {
-    // 仅测试 Route Handler，无需 jsdom 环境
+    // 仅测试 Route Handler 和服务层，无需 jsdom 环境
     environment: 'node',
-    include: ['app/**/*.test.ts'],
+    include: [
+      'app/**/*.test.ts',
+      'app/**/*.test.tsx',
+      'utils/**/*.test.ts',
+    ],
   },
 })

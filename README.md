@@ -1,36 +1,94 @@
-这是一个使用 [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) 创建的 [Next.js](https://nextjs.org) 项目。
+这是一个基于 [Next.js](https://nextjs.org) + [Supabase](https://supabase.com) 的全栈项目模板。
 
-## 开始
+## 技术栈
 
-首先，启动开发服务器：
+- **框架**: Next.js 16 (App Router)
+- **认证**: Supabase Auth (邮箱密码登录)
+- **数据库**: Supabase Postgres (通过 Data API 访问)
+- **样式**: Tailwind CSS 4 + Linear 风格 UI
+- **数据校验**: Zod
+- **测试**: Vitest
+
+## 本地开发
+
+### 前置条件
+
+1. Node.js 24+
+2. Docker Desktop（仅本地 Supabase 模拟需要）
+
+### 快速开始
 
 ```bash
+# 1. 安装依赖
+npm install
+
+# 2. 复制环境变量并填写你的 Supabase 项目配置
+cp .env.example .env.local
+# 编辑 .env.local，填入你的 Supabase URL 和匿名密钥
+
+# 3. 启动开发服务器
 npm run dev
-# 或
-yarn dev
-# 或
-pnpm dev
-# 或
-bun dev
 ```
 
-在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看结果。
+### 数据库迁移
 
-你可以通过修改 `app/page.tsx` 开始编辑页面。文件保存后页面会自动更新。
+本项目使用 [Supabase Migration](https://supabase.com/docs/guides/local-development/overview) 管理数据库 schema：
 
-本项目使用 [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) 自动优化和加载 [Geist](https://vercel.com/font) 字体——Vercel 的全新字体家族。
+```bash
+# 本地数据库重置（会清空数据，需 Docker）
+npm run db:reset
+
+# 关联远程项目后，将本地迁移推送到远程 Supabase 项目
+npx supabase link --project-ref <project-ref>
+npm run db:push
+```
+
+迁移文件位于 `supabase/migrations/` 目录。
+
+### 可用脚本
+
+```bash
+npm run dev      # 启动开发服务器
+npm run build    # 构建生产版本
+npm run start    # 启动生产服务
+npm run lint     # 代码检查
+npm run test     # 运行测试
+npm run db:reset # 重置本地 Supabase 数据库（需 Docker）
+npm run db:push  # 推送迁移至已关联的 Supabase 项目
+```
+
+## 项目结构
+
+```
+├── app/
+│   ├── _components/    # 共享 UI 组件
+│   ├── _lib/           # 工具库（BizException、错误处理等）
+│   ├── _service/       # 业务逻辑层
+│   ├── api/            # Route Handler (API 路由)
+│   ├── auth/           # 认证回调路由
+│   ├── chat/           # 聊天页面
+│   └── login/          # 登录/注册页面
+├── utils/
+│   └── supabase/       # Supabase SSR 客户端工具
+├── supabase/
+│   └── migrations/     # 数据库迁移文件
+├── data/               # 本地数据目录（Supabase 本地模拟使用）
+└── deploy/             # 部署配置示例
+```
+
+## 部署
+
+### 使用 Caddy + systemd
+
+项目提供了 `deploy/` 目录下的部署配置示例：
+
+- `Caddyfile.example` —— Caddy 反向代理配置
+- `hello-next-js.service.example` —— systemd 服务单元
+
+部署步骤请参考各文件中的注释说明。
 
 ## 了解更多
 
-要深入了解 Next.js，请查看以下资源：
-
-- [Next.js 文档](https://nextjs.org/docs) - 了解 Next.js 的功能和 API。
-- [学习 Next.js](https://nextjs.org/learn) - 交互式 Next.js 教程。
-
-你也可以查看 [Next.js GitHub 仓库](https://github.com/vercel/next.js)——欢迎提交反馈和贡献代码！
-
-## 部署到 Vercel
-
-将 Next.js 应用部署到生产环境最简单的方式是使用 [Vercel 平台](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)，它由 Next.js 的创造者开发。
-
-更多详情请查看 [Next.js 部署文档](https://nextjs.org/docs/app/building-your-application/deploying)。
+- [Next.js 文档](https://nextjs.org/docs)
+- [Supabase 文档](https://supabase.com/docs)
+- [Supabase SSR for Next.js](https://supabase.com/docs/guides/auth/server-side/nextjs)

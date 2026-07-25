@@ -22,10 +22,10 @@ export const GET = withApiErrorHandler(myHandler)
 
 ## 例外规则
 
-第三方库提供的完整 Route Handler（如 NextAuth 的 `handlers`）**不得**套用 `withApiErrorHandler`，原因：
+第三方库提供的完整 Route Handler（如 NextAuth 的 `handlers`）以及浏览器重定向协议端点（如 Supabase Auth 回调）**不得**套用 `withApiErrorHandler`，原因：
 
 1. 第三方库内部已有自己的错误处理逻辑，不应拦截
-2. 包装后可能破坏其协议兼容性或预期行为
+2. 包装后可能破坏其协议兼容性或预期行为；重定向端点必须返回跳转响应而非 JSON
 
 例外必须在路由文件中以**中文注释**说明原因。
 

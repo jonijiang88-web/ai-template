@@ -1,144 +1,172 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-// 使用 vi.hoisted 确保 mock 变量在 vi.mock 提升前已定义
-const { mockGetChatRepo, mockFind, mockCreate, mockSave } = vi.hoisted(() => {
-  return {
-    mockGetChatRepo: vi.fn(),
-    mockFind: vi.fn(),
-    mockCreate: vi.fn(),
-    mockSave: vi.fn(),
-  }
-})
-
-// 模拟 repository 层
-vi.mock('../_repository/chat', () => ({
-  getChatRepo: mockGetChatRepo,
-}))
-
+import { describe, it, expect, vi } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { getMessages, sendMessage } from './chat'
 
+/**
+ * 模拟的 Supabase 客户端类型，暴露内部 mock 方法供断言使用。
+ */
+interface MockSupabaseClient extends Pick<SupabaseClient, 'from'> {
+  _mockSelect: ReturnType<typeof vi.fn>
+  _mockEq: ReturnType<typeof vi.fn>
+  _mockOrder: ReturnType<typeof vi.fn>
+  _mockInsert: ReturnType<typeof vi.fn>
+}
+
+/**
+ * 创建模拟的 Supabase 客户端，支持链式调用（from → select/insert → eq → order）。
+ */
+function createMockSupabase(): MockSupabaseClient {
+  const mockSelect = vi.fn()
+  const mockEq = vi.fn()
+  const mockOrder = vi.fn()
+  const mockInsert = vi.fn()
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const mockFrom = vi.fn().mockImplementation((_table: string) => ({
+    select: mockSelect,
+    insert: mockInsert,
+  }))
+
+  mockSelect.mockReturnValue({ eq: mockEq })
+  mockEq.mockReturnValue({ order: mockOrder })
+  mockOrder.mockResolvedValue({ data: null, error: null })
+
+  mockInsert.mockResolvedValue({ data: null, error: null })
+
+  return {
+    from: mockFrom,
+    _mockSelect: mockSelect,
+    _mockEq: mockEq,
+    _mockOrder: mockOrder,
+    _mockInsert: mockInsert,
+  }
+}
+
 describe('chat 服务', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    // mockGetChatRepo 返回一个模拟的 TypeORM Repository
-    mockGetChatRepo.mockResolvedValue({
-      find: mockFind,
-      create: mockCreate,
-      save: mockSave,
-    })
-  })
-
   describe('getMessages', () => {
-    it('按指定 userId 查询消息，按 id 升序排列', async () => {
-      // 模拟返回空数组
-      mockFind.mockResolvedValue([])
-
-      await getMessages('user@test.com')
-
-      // 验证：find 查询条件包含 where.userId 和 order
-      expect(mockFind).toHaveBeenCalledWith({
-        where: { userId: 'user@test.com' },
-        order: { id: 'ASC' },
-      })
-    })
-
-    it('返回查询到的消息列表', async () => {
+    it('按指定 userId 查询 messages 表', async () => {
+      const supabase = createMockSupabase()
       // 模拟返回两条消息
       const fakeMessages = [
-        { id: 1, userId: 'user@test.com', role: 'user', content: 'hi' },
-        { id: 2, userId: 'user@test.com', role: 'bot', content: '你说了: "hi"' },
+        { id: '1', user_id: 'user-uuid', role: 'user', content: 'hi', created_at: '2026-01-01T00:00:00Z' },
+        { id: '2', user_id: 'user-uuid', role: 'assistant', content: 'You said: "hi"', created_at: '2026-01-01T00:00:01Z' },
       ]
-      mockFind.mockResolvedValue(fakeMessages)
+      supabase._mockOrder.mockResolvedValue({ data: fakeMessages, error: null })
 
-      const result = await getMessages('user@test.com')
+      const result = await getMessages(supabase as unknown as SupabaseClient, 'user-uuid')
 
-      // 验证：返回的内容与 mock 数据一致
+      // 验证：from 被调用时表名为 messages
+      expect(supabase.from).toHaveBeenCalledWith('messages')
+      // 验证：select 被调用时查询所有列
+      expect(supabase._mockSelect).toHaveBeenCalledWith('*')
+      // 验证：按 user_id 过滤
+      expect(supabase._mockEq).toHaveBeenCalledWith('user_id', 'user-uuid')
+      // 验证：按 created_at 升序排列
+      expect(supabase._mockOrder).toHaveBeenCalledWith('created_at', { ascending: true })
+      // 验证：返回的消息列表与 mock 数据一致
       expect(result).toEqual(fakeMessages)
     })
 
+    it('查询结果为空时返回空数组', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockOrder.mockResolvedValue({ data: [], error: null })
+
+      const result = await getMessages(supabase as unknown as SupabaseClient, 'other-user')
+
+      // 验证：返回空数组而非 null 或 undefined
+      expect(result).toEqual([])
+    })
+
+    it('Supabase 查询错误时抛出异常', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockOrder.mockResolvedValue({ data: null, error: new Error('DB error') })
+
+      // 验证：getMessages 抛出错误，不吞异常
+      await expect(getMessages(supabase as unknown as SupabaseClient, 'user-uuid')).rejects.toThrow('DB error')
+    })
+
     it('不同 userId 查询互不干扰', async () => {
-      // 模拟根据 userId 过滤——此处 mock 简化，只验证查询条件
-      mockFind.mockResolvedValue([])
+      const supabase = createMockSupabase()
+      supabase._mockOrder.mockResolvedValue({ data: [], error: null })
 
-      await getMessages('alice@test.com')
-      await getMessages('bob@test.com')
+      await getMessages(supabase as unknown as SupabaseClient, 'alice-uuid')
+      await getMessages(supabase as unknown as SupabaseClient, 'bob-uuid')
 
-      // 验证：两次调用的 userId 不同
-      expect(mockFind).toHaveBeenNthCalledWith(1, {
-        where: { userId: 'alice@test.com' },
-        order: { id: 'ASC' },
-      })
-      expect(mockFind).toHaveBeenNthCalledWith(2, {
-        where: { userId: 'bob@test.com' },
-        order: { id: 'ASC' },
-      })
+      // 验证：两次 eq 调用传入的 userId 不同
+      expect(supabase._mockEq).toHaveBeenNthCalledWith(1, 'user_id', 'alice-uuid')
+      expect(supabase._mockEq).toHaveBeenNthCalledWith(2, 'user_id', 'bob-uuid')
     })
   })
 
   describe('sendMessage', () => {
-    beforeEach(() => {
-      // repo.create 返回传入的数据对象（模拟 TypeORM 行为）
-      mockCreate.mockImplementation((data: unknown) => ({ ...data as object }))
-      // repo.save 返回保存的对象
-      mockSave.mockImplementation((data: unknown) => Promise.resolve(data))
+    it('插入 user 和 assistant 两条消息', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockInsert.mockResolvedValue({ data: null, error: null })
+
+      const reply = await sendMessage(supabase as unknown as SupabaseClient, 'user-uuid', 'hello')
+
+      // 验证：from 被调用时表名为 messages
+      expect(supabase.from).toHaveBeenCalledWith('messages')
+      // 验证：insert 调用了一次
+      expect(supabase._mockInsert).toHaveBeenCalledTimes(1)
+      // 验证：insert 参数包含 user 和 assistant 两条记录
+      const insertArg = supabase._mockInsert.mock.calls[0][0]
+      // 验证：insert 参数仅包含两条消息记录
+      expect(insertArg).toHaveLength(2)
+      // 验证：第一条为 user 角色
+      expect(insertArg[0]).toMatchObject({ user_id: 'user-uuid', role: 'user', content: 'hello' })
+      // 验证：第二条为 assistant 角色
+      expect(insertArg[1]).toMatchObject({ user_id: 'user-uuid', role: 'assistant' })
+      // 验证：回复内容正确
+      expect(reply).toBe('You said: "hello"')
     })
 
-    it('创建用户消息时 role 为 user 并绑定 userId', async () => {
-      await sendMessage('user@test.com', 'hello')
+    it('userId 统一绑定，不接受客户端传入', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockInsert.mockResolvedValue({ data: null, error: null })
 
-      // 验证：创建用户消息时 role='user', content='hello', userId 正确
-      expect(mockCreate).toHaveBeenCalledWith({
-        role: 'user',
-        content: 'hello',
-        userId: 'user@test.com',
-      })
+      await sendMessage(supabase as unknown as SupabaseClient, 'user-uuid', 'test')
+
+      // 验证：两条记录的 user_id 均为服务端提供的 userId
+      const insertArg = supabase._mockInsert.mock.calls[0][0]
+      // 验证：第一条记录绑定服务端提供的 userId
+      expect(insertArg[0].user_id).toBe('user-uuid')
+      // 验证：第二条记录绑定服务端提供的 userId
+      expect(insertArg[1].user_id).toBe('user-uuid')
     })
 
-    it('创建机器人回复时 role 为 bot 并绑定同一 userId', async () => {
-      await sendMessage('user@test.com', 'hello')
+    it('不同 userId 发送消息时各自绑定', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockInsert.mockResolvedValue({ data: null, error: null })
 
-      // 验证：创建 bot 消息时 role='bot', 且 userId 与用户消息一致
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          role: 'bot',
-          userId: 'user@test.com',
-        }),
-      )
+      await sendMessage(supabase as unknown as SupabaseClient, 'alice-uuid', 'hi')
+      await sendMessage(supabase as unknown as SupabaseClient, 'bob-uuid', 'hey')
+
+      // 验证：第一次 insert 使用 alice-uuid
+      expect(supabase._mockInsert.mock.calls[0][0][0].user_id).toBe('alice-uuid')
+      // 验证：第二次 insert 使用 bob-uuid
+      expect(supabase._mockInsert.mock.calls[1][0][0].user_id).toBe('bob-uuid')
     })
 
-    it('共创建两条消息（user + bot）', async () => {
-      await sendMessage('user@test.com', 'hello')
+    it('Supabase 插入错误时抛出异常', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockInsert.mockResolvedValue({ data: null, error: new Error('Insert failed') })
 
-      // 验证：create 被调用了两次
-      expect(mockCreate).toHaveBeenCalledTimes(2)
+      // 验证：sendMessage 抛出错误，不吞异常
+      await expect(sendMessage(supabase as unknown as SupabaseClient, 'user-uuid', 'hello')).rejects.toThrow('Insert failed')
     })
 
-    it('保存了用户消息和机器人消息', async () => {
-      await sendMessage('user@test.com', 'hello')
+    it('不同 userId 发送消息返回各自定制的回复', async () => {
+      const supabase = createMockSupabase()
+      supabase._mockInsert.mockResolvedValue({ data: null, error: null })
 
-      // 验证：save 被调用了两次（userMsg 和 botMsg）
-      expect(mockSave).toHaveBeenCalledTimes(2)
-    })
+      const reply1 = await sendMessage(supabase as unknown as SupabaseClient, 'alice-uuid', 'hi')
+      const reply2 = await sendMessage(supabase as unknown as SupabaseClient, 'bob-uuid', 'hey')
 
-    it('返回生成的回复内容', async () => {
-      const reply = await sendMessage('user@test.com', '你好')
-
-      // 验证：回复内容包含 "你说了: " 前缀和原始内容
-      expect(reply).toBe('你说了: "你好"')
-    })
-
-    it('不同 userId 发送消息时分别绑定各自 userId', async () => {
-      await sendMessage('alice@test.com', 'hi')
-      await sendMessage('bob@test.com', 'hey')
-
-      // 验证：第一次调用 userId 为 alice
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'alice@test.com' }),
-      )
-      // 验证：第二次调用 userId 为 bob
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'bob@test.com' }),
-      )
+      // 验证：回复内容包含各自的原始消息
+      expect(reply1).toBe('You said: "hi"')
+      // 验证：第二次调用的回复内容包含对应原始消息
+      expect(reply2).toBe('You said: "hey"')
     })
   })
 })
