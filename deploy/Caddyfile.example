@@ -1,0 +1,7 @@
+# Caddy 反向代理配置示例 —— hello-next-js
+# 使用前请将 chat.example.com 替换为实际域名。
+# 重载配置：caddy reload
+
+chat.example.com {
+    reverse_proxy 127.0.0.1:3000
+}

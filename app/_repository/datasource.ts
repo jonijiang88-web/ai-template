@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
 import { Message } from '../_entity/Message'
+import { InitializeSchema1720000000000 } from './migrations/1720000000000-InitializeSchema'
 import initSqlJs from 'sql.js'
 import fs from 'fs'
 import path from 'path'
@@ -24,9 +25,10 @@ export async function getDataSource(): Promise<DataSource> {
       type: 'sqljs',
       database,
       driver: SQL,
-      synchronize: true,
       logging: false,
       entities: [Message],
+      migrations: [InitializeSchema1720000000000],
+      migrationsRun: true,
       autoSave: true,
       location: DB_PATH,
     })

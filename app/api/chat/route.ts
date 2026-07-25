@@ -1,21 +1,79 @@
 import 'reflect-metadata'
+import { z } from 'zod'
 import { auth } from '../../_auth/auth'
 import { getMessages, sendMessage } from '../../_service/chat'
+import { BizException } from '../../_lib/BizException'
+import { withApiErrorHandler } from '../../_lib/api-error-handler'
 
-export async function GET() {
+/**
+ * POST 请求体校验 schema：要求 body 为对象，message 为字符串，
+ * trim 后长度在 1-4000 字符之间。
+ */
+const postSchema = z.object({
+  message: z.string().trim().min(1).max(4000),
+})
+
+/**
+ * 获取聊天消息列表（需登录 + 邮箱作为 userId）。
+ * 认证失败或邮箱不可用时抛出 BizException，由 withApiErrorHandler 统一处理。
+ */
+async function getHandler() {
   const session = await auth()
-  if (!session?.user) return Response.json({ error: '未登录' }, { status: 401 })
+  if (!session?.user) {
+    throw new BizException('UNAUTHORIZED', '未登录', 401)
+  }
+  const userId = session.user.email
+  if (!userId) {
+    throw new BizException('UNAUTHORIZED', '用户邮箱不可用', 401)
+  }
 
-  const messages = await getMessages()
+  const messages = await getMessages(userId)
   return Response.json({ messages })
 }
 
-export async function POST(request: Request) {
+/**
+ * 发送聊天消息（需登录 + 邮箱作为 userId + 请求体校验）。
+ * 认证失败、邮箱不可用、请求体非法时均抛出 BizException，
+ * 由 withApiErrorHandler 统一处理。
+ */
+async function postHandler(request?: Request) {
   const session = await auth()
-  if (!session?.user) return Response.json({ error: '未登录' }, { status: 401 })
+  if (!session?.user) {
+    throw new BizException('UNAUTHORIZED', '未登录', 401)
+  }
+  const userId = session.user.email
+  if (!userId) {
+    throw new BizException('UNAUTHORIZED', '用户邮箱不可用', 401)
+  }
 
-  const { message } = await request.json()
-  const reply = await sendMessage(message)
+  // 尝试解析 JSON，若失败则抛出 BizException
+  if (!request) {
+    throw new BizException('INVALID_JSON', '请求体不是合法的 JSON', 400)
+  }
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    throw new BizException('INVALID_JSON', '请求体不是合法的 JSON', 400)
+  }
+
+  // 使用 zod 校验请求体
+  const result = postSchema.safeParse(body)
+  if (!result.success) {
+    throw new BizException(
+      'VALIDATION_ERROR',
+      'message 必须为 1-4000 个字符',
+      400,
+    )
+  }
+
+  const reply = await sendMessage(userId, result.data.message)
 
   return Response.json({ reply })
 }
+
+/** GET /api/chat — 获取聊天消息列表，需登录，按当前用户隔离 */
+export const GET = withApiErrorHandler(getHandler)
+
+/** POST /api/chat — 发送聊天消息，需登录，message 校验通过后调用 sendMessage */
+export const POST = withApiErrorHandler(postHandler)

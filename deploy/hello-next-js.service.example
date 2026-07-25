@@ -1,0 +1,27 @@
+# systemd 服务单元示例 —— hello-next-js
+# 使用前请替换以下占位符：
+#   /path/to/deploy           → 实际部署目录
+#   hello-next-js             → 实际系统用户名
+#   /path/to/deploy/.env.production  → 生产环境变量文件
+#
+# 安装方式：
+#   sudo cp hello-next-js.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hello-next-js
+
+[Unit]
+Description=hello-next-js — Next.js 应用
+After=network.target
+
+[Service]
+Type=simple
+User=hello-next-js
+WorkingDirectory=/path/to/deploy
+EnvironmentFile=/path/to/deploy/.env.production
+ExecStart=/usr/bin/node /path/to/deploy/node_modules/.bin/next start
+Restart=on-failure
+RestartSec=5
+MemoryMax=384M
+
+[Install]
+WantedBy=multi-user.target
