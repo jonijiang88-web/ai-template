@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from '@vercel/analytics/next';
 import "../globals.css";
 import NavBar from "../_components/NavBar";
 import { hasLocale, locales } from '../_lib/i18n/routing'
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
           <NavBar />
           {children}
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
