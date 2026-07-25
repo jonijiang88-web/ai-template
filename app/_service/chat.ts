@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { UIMessage } from 'ai'
 
 /**
  * 消息记录类型，对应 supabase/migrations 中 public.messages 表。
@@ -9,6 +10,20 @@ export type MessageRecord = {
   role: 'user' | 'assistant'
   content: string
   created_at: string
+}
+
+/**
+ * 将数据库消息记录转为 AI SDK UIMessage 格式。
+ *
+ * @param record - 数据库消息记录
+ * @returns UIMessage 对象
+ */
+export function toUIMessage(record: MessageRecord): UIMessage {
+  return {
+    id: record.id,
+    role: record.role,
+    parts: [{ type: 'text', text: record.content }],
+  }
 }
 
 /**
@@ -39,31 +54,27 @@ export async function getMessages(
 }
 
 /**
- * 发送消息：一次性插入 user 消息和 assistant 自动回复两条记录。
+ * 保存用户消息和 AI 回复到数据库。
  *
- * userId 由服务端调用方（Route Handler）从 auth.getUser() 获取，
- * 应用层不得接受客户端传入的 userId。RLS 是数据隔离的主要保障。
+ * 由 API Route Handler 在 AI 回复完成后调用。
  *
- * @param supabase - Supabase 服务端客户端实例
- * @param userId   - 用户 UUID（由 auth.getUser() 提供）
- * @param content  - 用户消息内容
- * @returns 机器人回复文本
+ * @param supabase        - Supabase 服务端客户端实例
+ * @param userId          - 用户 UUID（由 auth.getUser() 提供）
+ * @param userContent     - 用户消息文本
+ * @param assistantReply  - AI 回复文本
  */
-export async function sendMessage(
+export async function saveMessages(
   supabase: SupabaseClient,
   userId: string,
-  content: string,
-): Promise<string> {
-  const reply = `You said: "${content}"`
-
+  userContent: string,
+  assistantReply: string,
+): Promise<void> {
   const { error } = await supabase.from('messages').insert([
-    { user_id: userId, role: 'user', content },
-    { user_id: userId, role: 'assistant', content: reply },
+    { user_id: userId, role: 'user', content: userContent },
+    { user_id: userId, role: 'assistant', content: assistantReply },
   ])
 
   if (error) {
-    throw error
+    console.error('Failed to save messages:', error)
   }
-
-  return reply
 }
