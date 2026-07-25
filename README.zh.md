@@ -1,4 +1,4 @@
-[![English](https://img.shields.io/badge/English-blue?style=flat)](./README.en.md)
+[![English](https://img.shields.io/badge/English-blue?style=flat)](./README.md)
 
 # AI Chat Template
 
