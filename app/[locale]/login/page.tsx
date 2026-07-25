@@ -69,12 +69,12 @@ export default function LoginPage() {
   )
 
   return (
-    <div className="flex flex-1 items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-[#1a1a1a] mb-1">
+    <div className="flex flex-1 justify-center px-6 py-16 sm:py-24">
+      <div className="w-full max-w-md">
+        <h1 className="mb-2 text-2xl font-semibold text-foreground">
           {isSignUp ? t('signUpTitle') : t('signInTitle')}
         </h1>
-        <p className="text-sm text-[#6b6b6b] mb-8">
+        <p className="mb-7 text-sm leading-6 text-muted">
           {isSignUp
               ? t('signUpDescription')
               : t('signInDescription')}
@@ -84,7 +84,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="text-sm font-medium text-[#1a1a1a] block mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               {t('email')}
             </label>
@@ -96,7 +96,7 @@ export default function LoginPage() {
               placeholder="you@example.com"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] disabled:opacity-40"
+              className="w-full rounded-[6px] border border-border px-3 py-2.5 text-sm text-foreground outline-none transition-colors duration-150 ease-in-out placeholder:text-placeholder focus:border-accent focus:ring-1 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
               disabled={loading}
             />
           </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="text-sm font-medium text-[#1a1a1a] block mb-1"
+              className="mb-1 block text-sm font-medium text-foreground"
             >
               {t('password')}
             </label>
@@ -116,23 +116,23 @@ export default function LoginPage() {
               placeholder={t('passwordPlaceholder')}
               required
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
-              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] disabled:opacity-40"
+              className="w-full rounded-[6px] border border-border px-3 py-2.5 text-sm text-foreground outline-none transition-colors duration-150 ease-in-out placeholder:text-placeholder focus:border-accent focus:ring-1 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
               disabled={loading}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-[#ef4444]">{error}</p>
+            <p className="text-sm text-danger">{error}</p>
           )}
 
           {message && (
-            <p className="text-sm text-[#22c55e]">{message}</p>
+            <p className="text-sm text-success">{message}</p>
           )}
 
           <button
             type="submit"
             disabled={loading || !email.trim() || !password.trim()}
-            className="w-full rounded-md bg-[#ea580c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#c2410c] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full rounded-[6px] bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors duration-150 ease-in-out hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40"
           >
             {loading
               ? t('processing')
@@ -142,14 +142,14 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-sm text-[#6b6b6b] mt-6 text-center">
+        <p className="mt-6 text-center text-sm text-muted">
           {isSignUp ? (
             <>
               {t('hasAccount')}{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(false); setError(null); setMessage(null) }}
-                className="text-[#ea580c] hover:underline"
+                className="rounded-[4px] text-accent transition-colors duration-150 ease-in-out hover:text-accent-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {t('signIn')}
               </button>
@@ -160,7 +160,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setIsSignUp(true); setError(null); setMessage(null) }}
-                className="text-[#ea580c] hover:underline"
+                className="rounded-[4px] text-accent transition-colors duration-150 ease-in-out hover:text-accent-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {t('createOne')}
               </button>

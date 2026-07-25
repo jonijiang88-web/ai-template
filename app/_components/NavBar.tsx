@@ -51,17 +51,17 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="flex items-center justify-between border-b border-[#e5e5e5] px-6 py-3">
+    <nav className="flex min-h-12 items-center justify-between border-b border-border px-4 py-3 sm:px-6">
       <Link
         href="/"
-        className="text-sm font-semibold text-[#1a1a1a] hover:text-[#ea580c] transition"
+        className="shrink-0 text-sm font-semibold text-foreground transition-colors duration-150 ease-in-out hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
       >
         {t('brand')}
       </Link>
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
         <Link
           href="/chat"
-          className="text-sm text-[#6b6b6b] hover:text-[#1a1a1a] transition"
+          className="text-sm text-muted transition-colors duration-150 ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           {t('chat')}
         </Link>
@@ -71,7 +71,7 @@ export default function NavBar() {
         <select
           id="locale"
           aria-label={t('language')}
-          className="border-0 bg-transparent text-sm text-[#6b6b6b] outline-none hover:text-[#1a1a1a]"
+          className="rounded-[4px] border-0 bg-transparent px-1 text-sm text-muted outline-none transition-colors duration-150 ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           onChange={(event) => handleLocaleChange(event.target.value as AppLocale)}
           value={locale}
         >
@@ -79,13 +79,16 @@ export default function NavBar() {
           <option value="en">English</option>
         </select>
         {loading ? (
-          <span className="text-sm text-[#a0a0a0]">{t('loading')}</span>
+          <>
+            <span aria-hidden="true" className="h-4 w-12 rounded-[4px] bg-panel" />
+            <span role="status" className="sr-only">{t('loading')}</span>
+          </>
         ) : user ? (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[#6b6b6b]">{user.email}</span>
+            <span className="max-w-40 truncate text-sm text-muted">{user.email}</span>
             <button
               onClick={handleSignOut}
-              className="text-sm text-[#6b6b6b] hover:text-[#1a1a1a] transition"
+              className="text-sm text-muted transition-colors duration-150 ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
             >
               {t('signOut')}
             </button>
@@ -93,7 +96,7 @@ export default function NavBar() {
         ) : (
           <Link
             href="/login"
-            className="text-sm text-[#ea580c] hover:text-[#c2410c] transition"
+            className="text-sm font-medium text-accent transition-colors duration-150 ease-in-out hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
           >
             {t('signIn')}
           </Link>

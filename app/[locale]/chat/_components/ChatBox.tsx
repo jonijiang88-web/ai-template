@@ -111,17 +111,17 @@ export default function ChatBox() {
   }
 
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto border border-[#e5e5e5] rounded-lg shadow-sm">
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="flex h-full w-full max-w-3xl flex-col border border-border bg-background shadow-sm sm:rounded-[10px]">
+      <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
         {state.messages.length === 0 && (
-          <p className="text-center text-[#a0a0a0] mt-20 text-sm">{t('empty')}</p>
+          <p className="mt-20 text-center text-sm text-placeholder">{t('empty')}</p>
         )}
         {state.messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[70%] rounded-lg px-4 py-2 text-sm ${
+            <div className={`max-w-[80%] rounded-[8px] px-4 py-2.5 text-sm leading-6 sm:max-w-[70%] ${
               msg.role === 'user'
-                ? 'bg-[#ea580c] text-white'
-                : 'bg-[#f8f8f8] text-[#1a1a1a]'
+                ? 'bg-accent text-white'
+                : 'bg-panel text-foreground'
             }`}>
               {msg.content}
             </div>
@@ -129,25 +129,25 @@ export default function ChatBox() {
         ))}
         {state.loading && (
           <div className="flex justify-start">
-            <div className="bg-[#f8f8f8] rounded-lg px-4 py-2 text-sm text-[#a0a0a0]">
+            <div className="rounded-[8px] bg-panel px-4 py-2.5 text-sm text-placeholder">
               {t('typing')}
             </div>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-[#e5e5e5] p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 border-t border-border p-4 sm:p-5">
         <input
           value={state.input}
           onChange={e => dispatch({ type: 'SET_INPUT', value: e.target.value })}
           placeholder={t('inputPlaceholder')}
-          className="flex-1 rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] disabled:opacity-40"
+          className="min-w-0 flex-1 rounded-[6px] border border-border px-3 py-2 text-sm text-foreground outline-none transition-colors duration-150 ease-in-out placeholder:text-placeholder focus:border-accent focus:ring-1 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
           disabled={state.loading}
         />
         <button
           type="submit"
           disabled={state.loading || !state.input.trim()}
-          className="rounded-md bg-[#ea580c] text-white px-5 py-2 text-sm font-medium transition hover:bg-[#c2410c] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
+          className="rounded-[6px] bg-accent px-5 py-2 text-sm font-medium text-white transition-colors duration-150 ease-in-out hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40"
         >
           {t('send')}
         </button>

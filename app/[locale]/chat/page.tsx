@@ -19,7 +19,7 @@ export default async function ChatPage() {
   }
 
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-1 px-4 py-4 sm:px-6 sm:py-6">
       <ChatBox />
     </div>
   )
