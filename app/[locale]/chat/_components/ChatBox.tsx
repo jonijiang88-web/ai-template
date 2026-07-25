@@ -1,8 +1,10 @@
 'use client'
 
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { useTranslations } from 'next-intl'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { UIMessage } from 'ai'
 
 /**
@@ -53,12 +55,13 @@ export default function ChatBox() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  /** 提取消息中的纯文本内容 */
-  const renderText = useCallback((msg: UIMessage) => {
+  /** 提取消息中的纯文本 */
+  function getMessageText(msg: UIMessage): string {
     return msg.parts
       .filter(p => p.type === 'text')
-      .map((p, i) => <div key={i}>{(p as { text: string }).text}</div>)
-  }, [])
+      .map(p => (p as { text: string }).text)
+      .join('')
+  }
 
   /** 处理表单提交 */
   function handleSubmit(e: React.FormEvent) {
@@ -89,7 +92,15 @@ export default function ChatBox() {
                   : 'bg-panel text-foreground'
               }`}
             >
-              {renderText(msg)}
+              {msg.role === 'assistant' ? (
+                <div className="prose prose-sm max-w-none dark:prose-invert [&_pre]:overflow-x-auto [&_pre]:rounded-[6px] [&_pre]:bg-black/5 [&_pre]:p-3 [&_pre]:text-xs dark:[&_pre]:bg-white/10 [&_code]:rounded-[3px] [&_code]:bg-black/5 [&_code]:px-1 [&_code]:py-0.5 dark:[&_code]:bg-white/10">
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {getMessageText(msg)}
+                  </Markdown>
+                </div>
+              ) : (
+                getMessageText(msg)
+              )}
             </div>
           </div>
         ))}
