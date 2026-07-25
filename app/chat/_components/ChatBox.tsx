@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Message = {
   role: 'user' | 'bot'
@@ -11,22 +11,35 @@ export default function ChatBox() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    fetch('/api/chat')
+      .then(res => res.json())
+      .then(data => setMessages(data.messages))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!input.trim() || loading) return
 
-    const userMessage: Message = { role: 'user', content: input }
-    setMessages(prev => [...prev, userMessage])
+    const msg = input
     setInput('')
     setLoading(true)
+
+    const userMessage: Message = { role: 'user', content: msg }
+    setMessages(prev => [...prev, userMessage])
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: msg }),
       })
       const data = await res.json()
       const botMessage: Message = { role: 'bot', content: data.reply }
@@ -64,7 +77,7 @@ export default function ChatBox() {
         )}
       </div>
 
-      <form ref={formRef} onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
