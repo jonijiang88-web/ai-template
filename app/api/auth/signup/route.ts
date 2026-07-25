@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
     await signup(email, password, locale ?? 'en')
 
     return NextResponse.json({ ok: true })
-  } catch (err: any) {
+  } catch (err) {
     console.error('[signup]', err)
     // Supabase 重复邮箱错误
-    if (err?.message?.includes('already registered')) {
+    if (err instanceof Error && err.message.includes('already registered')) {
       return NextResponse.json({ error: '该邮箱已注册' }, { status: 409 })
     }
     return NextResponse.json({ error: '注册失败' }, { status: 500 })
