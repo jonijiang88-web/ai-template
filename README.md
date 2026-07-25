@@ -1,104 +1,86 @@
-这是一个基于 [Next.js](https://nextjs.org) + [Supabase](https://supabase.com) 的全栈项目模板。
+# AI Chat Template
 
-## 技术栈
+![Stack](https://img.shields.io/badge/Next.js_16-000?logo=next.js) ![Stack](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase) ![Stack](https://img.shields.io/badge/DeepSeek-4F6BF4?logo=deepseek) ![Stack](https://img.shields.io/badge/Vercel-000?logo=vercel)
 
-- **框架**: Next.js 16 (App Router)
-- **认证**: Supabase Auth (邮箱密码登录)
-- **数据库**: Supabase Postgres (通过 Data API 访问)
-- **样式**: Tailwind CSS 4 + Linear 风格 UI
-- **数据校验**: Zod
-- **国际化**: next-intl（中文、英文与 locale 路由）
-- **测试**: Vitest
+**一个开箱即用的 AI 聊天应用模板。** 注册三个账号、填三个 Key、30 分钟上线，月费 ¥0。
 
-## 本地开发
-
-### 前置条件
-
-1. Node.js 24+
-2. Docker Desktop（仅本地 Supabase 模拟需要）
-
-### 快速开始
+## 三步上线
 
 ```bash
-# 1. 安装依赖
-npm install
+# 1. 克隆
+git clone https://github.com/jonijiang88-web/ai-template.git
+cd ai-template && npm install
 
-# 2. 复制环境变量并填写你的 Supabase 项目配置
+# 2. 配置环境变量
 cp .env.example .env.local
-# 编辑 .env.local，填入你的 Supabase URL 和匿名密钥
+# 填入 Supabase URL/Key + DeepSeek API Key
 
-# 3. 启动开发服务器
+# 3. 启动
 npm run dev
 ```
 
-### 数据库迁移
+## 技术栈
 
-本项目使用 [Supabase Migration](https://supabase.com/docs/guides/local-development/overview) 管理数据库 schema：
+| 层 | 选型 | 成本 |
+|---|------|------|
+| **框架** | Next.js 16 (App Router) | 免费 |
+| **托管** | Vercel (Hobby) | 免费 |
+| **数据库 / 鉴权** | Supabase | 免费 (500MB) |
+| **AI 模型** | DeepSeek V4 (via `@ai-sdk/deepseek`) | 按量 (新用户有赠送) |
+| **邮件** | Resend | 免费 (3000封/月) |
+| **样式** | Tailwind CSS 4 + Linear 风格 | — |
+| **测试** | Vitest | — |
+
+## 功能
+
+- ✅ **AI 聊天** — Vercel AI SDK 流式响应，支持 Markdown 渲染（代码块、表格、列表）
+- ✅ **邮箱登录** — Supabase Auth + Resend 确认邮件
+- ✅ **多语言** — 中文 / English（next-intl）
+- ✅ **全栈类型安全** — Zod 校验、TypeScript 严格模式
+- ✅ **零成本托管** — Vercel Hobby + Supabase Free + Resend Free
+
+## 脚本
 
 ```bash
-# 本地数据库重置（会清空数据，需 Docker）
-npm run db:reset
-
-# 关联远程项目后，将本地迁移推送到远程 Supabase 项目
-npx supabase link --project-ref <project-ref>
-npm run db:push
-```
-
-迁移文件位于 `supabase/migrations/` 目录。
-
-### 可用脚本
-
-```bash
-npm run dev      # 启动开发服务器
-npm run build    # 构建生产版本
-npm run start    # 启动生产服务
-npm run lint     # 代码检查
-npm run test     # 运行测试
-npm run test:integration # 验证远程 Supabase 连通性与匿名 RLS
-npm run db:reset # 重置本地 Supabase 数据库（需 Docker）
-npm run db:push  # 推送迁移至已关联的 Supabase 项目
+npm run dev              # 开发
+npm run build            # 构建
+npm run start            # 生产启动
+npm run test             # 单元测试
+npm run test:integration # Supabase 连通性测试
+npm run lint             # 代码检查
 ```
 
 ## 项目结构
 
 ```
-├── app/
-│   ├── _components/    # 共享 UI 组件
-│   ├── _lib/           # 工具库（BizException、错误处理、Supabase 客户端等）
-│   ├── _service/       # 业务逻辑层
-│   ├── api/            # Route Handler (API 路由)
-│   ├── auth/           # 认证回调路由
-│   ├── chat/           # 聊天页面
-│   └── login/          # 登录/注册页面
-├── supabase/
-│   └── migrations/     # 数据库迁移文件
-├── data/               # 本地数据目录（Supabase 本地模拟使用）
-└── deploy/             # 部署配置示例
+app/
+├── _components/     # 共享 UI 组件
+├── _lib/            # 工具库（Error handling、Supabase 客户端）
+├── _service/        # 业务逻辑层
+├── api/             # Route Handler
+│   └── chat/        # 流式聊天 API（DeepSeek）
+├── auth/            # 认证回调
+├── [locale]/
+│   ├── chat/        # 聊天页面（useChat hook + Markdown 渲染）
+│   └── login/       # 登录/注册
+├── globals.css
+└── layout.tsx
 ```
 
-## 国际化
+## 你需要准备
 
-- 默认语言为中文，页面 URL 保持 `/`、`/chat`、`/login`。
-- 英文页面使用 `/en`、`/en/chat`、`/en/login`。
-- 翻译字典位于 `app/_lib/i18n/messages/`，路由与类型定义位于
-  `app/_lib/i18n/`。
-- 新增语言时，同时更新 `routing.ts`、对应 JSON 字典和语言切换器选项。
+1. **Supabase 项目** → [supabase.com](https://supabase.com) → Settings → API → 复制 URL 和 anon key
+2. **DeepSeek API Key** → [platform.deepseek.com](https://platform.deepseek.com/api_keys) → 创建 key
+3. **Resend API Key**（可选，不配也能跑）→ [resend.com](https://resend.com) → API Keys
 
-`/api/*` 与 `/auth/*` 保持不带 locale 的稳定路径。
+填到 `.env.local` 即可。
 
-## 部署
+## 部署到 Vercel
 
-### 使用 Caddy + systemd
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/jonijiang88-web/ai-template)
 
-项目提供了 `deploy/` 目录下的部署配置示例：
+一键导入仓库，环境变量照搬 `.env.local`，点一下即可上线。
 
-- `Caddyfile.example` —— Caddy 反向代理配置
-- `hello-next-js.service.example` —— systemd 服务单元
+## License
 
-部署步骤请参考各文件中的注释说明。
-
-## 了解更多
-
-- [Next.js 文档](https://nextjs.org/docs)
-- [Supabase 文档](https://supabase.com/docs)
-- [Supabase SSR for Next.js](https://supabase.com/docs/guides/auth/server-side/nextjs)
+MIT
