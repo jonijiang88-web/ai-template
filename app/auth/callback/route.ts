@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/app/_lib/supabase/server'
 
 /**
  * 仅允许 Supabase 认证回调跳转至本站相对路径，防止开放重定向。

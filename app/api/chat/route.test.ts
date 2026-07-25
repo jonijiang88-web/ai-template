@@ -11,7 +11,7 @@ const { mockCreateServerClient, mockGetUser, mockGetMessages, mockSendMessage } 
 })
 
 // 模拟 Supabase 服务端客户端创建
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('@/app/_lib/supabase/server', () => ({
   createClient: mockCreateServerClient,
 }))
 

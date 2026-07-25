@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/app/_lib/supabase/server'
+import { redirect } from '@/app/_lib/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import ChatBox from './_components/ChatBox'
 
 /**
@@ -13,7 +14,8 @@ export default async function ChatPage() {
   const { data } = await supabase.auth.getUser()
 
   if (!data?.user) {
-    redirect('/login')
+    const locale = await getLocale()
+    redirect({ href: '/login', locale })
   }
 
   return (

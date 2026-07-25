@@ -1,6 +1,7 @@
 'use client'
 
 import { useReducer, useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -18,7 +19,7 @@ type Action =
   | { type: 'SET_INPUT'; value: string }
   | { type: 'SEND_START'; content: string }
   | { type: 'SEND_SUCCESS'; reply: string }
-  | { type: 'SEND_ERROR' }
+  | { type: 'SEND_ERROR'; message: string }
 
 function chatReducer(state: State, action: Action): State {
   switch (action.type) {
@@ -45,7 +46,7 @@ function chatReducer(state: State, action: Action): State {
     case 'SEND_ERROR':
       return {
         ...state,
-        messages: [...state.messages, { role: 'assistant', content: '出错了，请重试' }],
+        messages: [...state.messages, { role: 'assistant', content: action.message }],
         loading: false,
       }
   }
@@ -58,6 +59,7 @@ function chatReducer(state: State, action: Action): State {
  * 前端 role 使用 'assistant'（替代旧版 'bot'），与 Supabase messages 表一致。
  */
 export default function ChatBox() {
+  const t = useTranslations('Chat')
   const [state, dispatch] = useReducer(chatReducer, {
     messages: [],
     input: '',
@@ -101,10 +103,10 @@ export default function ChatBox() {
       if (data.reply) {
         dispatch({ type: 'SEND_SUCCESS', reply: data.reply })
       } else {
-        dispatch({ type: 'SEND_ERROR' })
+        dispatch({ type: 'SEND_ERROR', message: t('sendFailed') })
       }
     } catch {
-      dispatch({ type: 'SEND_ERROR' })
+      dispatch({ type: 'SEND_ERROR', message: t('sendFailed') })
     }
   }
 
@@ -112,7 +114,7 @@ export default function ChatBox() {
     <div className="flex flex-col h-full max-w-2xl mx-auto border border-[#e5e5e5] rounded-lg shadow-sm">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {state.messages.length === 0 && (
-          <p className="text-center text-[#a0a0a0] mt-20 text-sm">Start chatting!</p>
+          <p className="text-center text-[#a0a0a0] mt-20 text-sm">{t('empty')}</p>
         )}
         {state.messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -128,7 +130,7 @@ export default function ChatBox() {
         {state.loading && (
           <div className="flex justify-start">
             <div className="bg-[#f8f8f8] rounded-lg px-4 py-2 text-sm text-[#a0a0a0]">
-              Typing...
+              {t('typing')}
             </div>
           </div>
         )}
@@ -138,7 +140,7 @@ export default function ChatBox() {
         <input
           value={state.input}
           onChange={e => dispatch({ type: 'SET_INPUT', value: e.target.value })}
-          placeholder="Type a message..."
+          placeholder={t('inputPlaceholder')}
           className="flex-1 rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] disabled:opacity-40"
           disabled={state.loading}
         />
@@ -147,7 +149,7 @@ export default function ChatBox() {
           disabled={state.loading || !state.input.trim()}
           className="rounded-md bg-[#5e6ad2] text-white px-5 py-2 text-sm font-medium transition hover:bg-[#4f5ad0] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
         >
-          Send
+          {t('send')}
         </button>
       </form>
       <div ref={bottomRef} />

@@ -7,6 +7,7 @@
 - **数据库**: Supabase Postgres (通过 Data API 访问)
 - **样式**: Tailwind CSS 4 + Linear 风格 UI
 - **数据校验**: Zod
+- **国际化**: next-intl（中文、英文与 locale 路由）
 - **测试**: Vitest
 
 ## 本地开发
@@ -53,6 +54,7 @@ npm run build    # 构建生产版本
 npm run start    # 启动生产服务
 npm run lint     # 代码检查
 npm run test     # 运行测试
+npm run test:integration # 验证远程 Supabase 连通性与匿名 RLS
 npm run db:reset # 重置本地 Supabase 数据库（需 Docker）
 npm run db:push  # 推送迁移至已关联的 Supabase 项目
 ```
@@ -62,19 +64,27 @@ npm run db:push  # 推送迁移至已关联的 Supabase 项目
 ```
 ├── app/
 │   ├── _components/    # 共享 UI 组件
-│   ├── _lib/           # 工具库（BizException、错误处理等）
+│   ├── _lib/           # 工具库（BizException、错误处理、Supabase 客户端等）
 │   ├── _service/       # 业务逻辑层
 │   ├── api/            # Route Handler (API 路由)
 │   ├── auth/           # 认证回调路由
 │   ├── chat/           # 聊天页面
 │   └── login/          # 登录/注册页面
-├── lib/
-│   └── supabase/       # Supabase SSR 客户端工具
 ├── supabase/
 │   └── migrations/     # 数据库迁移文件
 ├── data/               # 本地数据目录（Supabase 本地模拟使用）
 └── deploy/             # 部署配置示例
 ```
+
+## 国际化
+
+- 默认语言为中文，页面 URL 保持 `/`、`/chat`、`/login`。
+- 英文页面使用 `/en`、`/en/chat`、`/en/login`。
+- 翻译字典位于 `app/_lib/i18n/messages/`，路由与类型定义位于
+  `app/_lib/i18n/`。
+- 新增语言时，同时更新 `routing.ts`、对应 JSON 字典和语言切换器选项。
+
+`/api/*` 与 `/auth/*` 保持不带 locale 的稳定路径。
 
 ## 部署
 

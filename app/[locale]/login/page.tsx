@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useLocale, useTranslations } from 'next-intl'
+import { createClient } from '@/app/_lib/supabase/client'
+import { useRouter } from '@/app/_lib/i18n/navigation'
 
 /**
  * 登录/注册页面 —— 使用 Supabase Auth 的邮箱密码方式。
@@ -21,6 +22,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
+  const locale = useLocale()
+  const t = useTranslations('Login')
   const supabase = useMemo(() => createClient(), [])
 
   /**
@@ -33,12 +36,14 @@ export default function LoginPage() {
       setError(null)
       setMessage(null)
 
+      const callbackPath = locale === 'en' ? '/en/chat' : '/chat'
+
       const { error: authError } = isSignUp
         ? await supabase.auth.signUp({
             email,
             password,
             options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(callbackPath)}`,
             },
           })
         : await supabase.auth.signInWithPassword({ email, password })
@@ -51,7 +56,7 @@ export default function LoginPage() {
 
       if (isSignUp) {
         // 注册成功后提示查收确认邮件
-        setMessage('注册成功！请查看邮箱中的确认链接。')
+        setMessage(t('signUpSuccess'))
         setLoading(false)
         return
       }
@@ -60,19 +65,19 @@ export default function LoginPage() {
       router.push('/chat')
       router.refresh()
     },
-    [email, password, isSignUp, router, supabase],
+    [email, password, isSignUp, locale, router, supabase, t],
   )
 
   return (
     <div className="flex flex-1 items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <h1 className="text-xl font-semibold text-[#1a1a1a] mb-1">
-          {isSignUp ? 'Create account' : 'Sign in'}
+          {isSignUp ? t('signUpTitle') : t('signInTitle')}
         </h1>
         <p className="text-sm text-[#6b6b6b] mb-8">
           {isSignUp
-            ? 'Enter your email to get started.'
-            : 'Enter your email and password to continue.'}
+              ? t('signUpDescription')
+              : t('signInDescription')}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -81,7 +86,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="text-sm font-medium text-[#1a1a1a] block mb-1"
             >
-              Email
+              {t('email')}
             </label>
             <input
               id="email"
@@ -101,14 +106,14 @@ export default function LoginPage() {
               htmlFor="password"
               className="text-sm font-medium text-[#1a1a1a] block mb-1"
             >
-              Password
+              {t('password')}
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('passwordPlaceholder')}
               required
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
               className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] focus:ring-1 focus:ring-[#5e6ad2] disabled:opacity-40"
@@ -130,34 +135,34 @@ export default function LoginPage() {
             className="w-full rounded-md bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#4f5ad0] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
           >
             {loading
-              ? 'Processing...'
+              ? t('processing')
               : isSignUp
-                ? 'Create account'
-                : 'Sign in'}
+              ? t('signUp')
+              : t('signIn')}
           </button>
         </form>
 
         <p className="text-sm text-[#6b6b6b] mt-6 text-center">
           {isSignUp ? (
             <>
-              Already have an account?{' '}
+              {t('hasAccount')}{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(false); setError(null); setMessage(null) }}
                 className="text-[#5e6ad2] hover:underline"
               >
-                Sign in
+                {t('signIn')}
               </button>
             </>
           ) : (
             <>
-              No account?{' '}
+              {t('noAccount')}{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(true); setError(null); setMessage(null) }}
                 className="text-[#5e6ad2] hover:underline"
               >
-                Create one
+                {t('createOne')}
               </button>
             </>
           )}

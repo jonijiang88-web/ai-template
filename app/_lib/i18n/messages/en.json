@@ -1,0 +1,42 @@
+{
+  "Metadata": {
+    "title": "Hello Next.js",
+    "description": "A Next.js template for AI applications"
+  },
+  "Navigation": {
+    "brand": "Hello Next.js",
+    "chat": "Chat",
+    "loading": "Loading...",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "Home": {
+    "title": "Hello Next.js",
+    "description": "A full-stack template for building AI applications.",
+    "openChat": "Open ChatBox"
+  },
+  "Login": {
+    "signInTitle": "Sign in",
+    "signUpTitle": "Create account",
+    "signInDescription": "Enter your email and password to continue.",
+    "signUpDescription": "Enter your email to get started.",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "processing": "Processing...",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "signUpSuccess": "Account created. Check your email for the confirmation link.",
+    "hasAccount": "Already have an account?",
+    "noAccount": "No account?",
+    "createOne": "Create one"
+  },
+  "Chat": {
+    "empty": "Start chatting!",
+    "typing": "Typing...",
+    "inputPlaceholder": "Type a message...",
+    "send": "Send",
+    "sendFailed": "Something went wrong. Please try again."
+  }
+}

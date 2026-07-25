@@ -1,0 +1,42 @@
+{
+  "Metadata": {
+    "title": "Hello Next.js",
+    "description": "面向 AI 应用的 Next.js 模板"
+  },
+  "Navigation": {
+    "brand": "Hello Next.js",
+    "chat": "聊天",
+    "loading": "加载中...",
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "language": "语言"
+  },
+  "Home": {
+    "title": "Hello Next.js",
+    "description": "用于构建 AI 应用的全栈模板。",
+    "openChat": "打开 ChatBox"
+  },
+  "Login": {
+    "signInTitle": "登录",
+    "signUpTitle": "创建账号",
+    "signInDescription": "输入邮箱和密码以继续。",
+    "signUpDescription": "输入邮箱即可开始使用。",
+    "email": "邮箱",
+    "password": "密码",
+    "passwordPlaceholder": "输入密码",
+    "processing": "处理中...",
+    "signIn": "登录",
+    "signUp": "创建账号",
+    "signUpSuccess": "注册成功，请查看邮箱中的确认链接。",
+    "hasAccount": "已有账号？",
+    "noAccount": "还没有账号？",
+    "createOne": "创建账号"
+  },
+  "Chat": {
+    "empty": "开始聊天吧！",
+    "typing": "正在输入...",
+    "inputPlaceholder": "输入消息...",
+    "send": "发送",
+    "sendFailed": "出错了，请重试"
+  }
+}
