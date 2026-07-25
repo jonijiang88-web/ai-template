@@ -25,7 +25,7 @@ import { generateText } from 'ai'
 import { deepSeek } from '@ai-sdk/deepseek'
 
 const { text } = await generateText({
-  model: deepSeek('deepseek-chat'),
+  model: deepSeek('deepseek-v4-flash'),
   prompt: '写一首诗',
 })
 ```
@@ -35,7 +35,7 @@ const { text } = await generateText({
 import { streamText } from 'ai'
 
 const result = streamText({
-  model: deepSeek('deepseek-chat'),
+  model: deepSeek('deepseek-v4-flash'),
   messages: await convertToModelMessages(uiMessages),
   onFinish: async ({ text }) => { /* 持久化 */ },
 })
@@ -44,7 +44,7 @@ const result = streamText({
 ### `generateObject` / `streamObject` — 生成结构化数据
 ```ts
 const { object } = await generateObject({
-  model: deepSeek('deepseek-chat'),
+  model: deepSeek('deepseek-v4-flash'),
   schema: z.object({ name: z.string(), age: z.number() }),
   prompt: '提取信息',
 })
@@ -133,7 +133,7 @@ const provider = createOpenAICompatible({
 
 ```ts
 const result = streamText({
-  model: deepSeek('deepseek-chat'),
+  model: deepSeek('deepseek-v4-flash'),
   tools: {
     weather: tool({
       description: '获取天气',

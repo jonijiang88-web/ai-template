@@ -40,5 +40,5 @@ function getResend() {
 关键约定：
 - `useChat` 的 **`initialMessages` prop 不可用**（v7 类型不支持），改用 `setMessages()` 加载历史
 - `UIMessage` 用 `parts` 数组替代旧的 `content` 字符串
-- `streamText` 需显式指定 Provider（如 `deepSeek('deepseek-chat')`），否则默认走 AI Gateway
+- `streamText` 需显式指定 Provider（如 `deepSeek('deepseek-v4-flash')`），否则默认走 AI Gateway
 <!-- END:ai-sdk -->

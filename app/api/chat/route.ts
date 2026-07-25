@@ -74,7 +74,7 @@ async function postHandler(request?: Request) {
   const userContent = extractUserText(body.messages)
 
   const result = streamText({
-    model: deepSeek('deepseek-chat'),
+    model: deepSeek('deepseek-v4-flash'),
     messages: await convertToModelMessages(body.messages),
     onFinish: async ({ text }) => {
       // 持久化：用户消息 + AI 回复
