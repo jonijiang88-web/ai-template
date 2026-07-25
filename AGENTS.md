@@ -78,6 +78,11 @@ throw new BizException('ERROR_CODE', '用户可见的错误信息', 422)
 // 自动转为 { error: { code: 'ERROR_CODE', message: '...' } }
 ```
 未知异常自动转为 500，不泄漏内部错误细节。
+
+## 错误消息多语言
+API 错误消息根据 `Accept-Language` 头自动切换中/英。
+新增错误码时需同时在 `app/_lib/api-error-handler.ts` 的 `errorMessages` 字典中添加翻译。
+详细规范见 `doc/i18n.md`。
 <!-- END:api-patterns -->
 
 <!-- BEGIN:project-structure -->

@@ -1,24 +1,5 @@
 import { BizException } from './BizException'
-
-/**
- * 支持的语言列表。
- */
-const SUPPORTED_LOCALES = ['zh', 'en'] as const
-type Locale = (typeof SUPPORTED_LOCALES)[number]
-
-/**
- * 从 Accept-Language 头中提取支持的语言。
- */
-function detectLocale(acceptLanguage?: string): Locale {
-  if (!acceptLanguage) return 'zh'
-  // 解析 "zh-CN,zh;q=0.9,en;q=0.8" 格式
-  const preferred = acceptLanguage
-    .split(',')
-    .map(s => s.trim().split(';')[0])
-    .map(s => s.split('-')[0]) // zh-CN → zh
-    .find(l => (SUPPORTED_LOCALES as readonly string[]).includes(l))
-  return (preferred as Locale) ?? 'zh'
-}
+import { detectLocaleFromRequest, type Locale } from './locale'
 
 /**
  * 各语言错误消息字典。
@@ -86,8 +67,7 @@ export function withApiErrorHandler<TArgs extends unknown[]>(
       return await handler(...args)
     } catch (err) {
       // 从请求头检测用户语言
-      const req = extractRequest(args)
-      const locale = detectLocale(req?.headers.get('Accept-Language') ?? undefined)
+      const locale = detectLocaleFromRequest(extractRequest(args))
 
       if (err instanceof BizException) {
         return Response.json(
