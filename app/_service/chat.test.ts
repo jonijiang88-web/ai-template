@@ -21,8 +21,7 @@ function createMockSupabase(): MockSupabaseClient {
   const mockOrder = vi.fn()
   const mockInsert = vi.fn()
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const mockFrom = vi.fn().mockImplementation((_table: string) => ({
+  const mockFrom = vi.fn().mockImplementation(() => ({
     select: mockSelect,
     insert: mockInsert,
   }))

@@ -54,7 +54,7 @@ export default function NavBar() {
     <nav className="flex items-center justify-between border-b border-[#e5e5e5] px-6 py-3">
       <Link
         href="/"
-        className="text-sm font-semibold text-[#1a1a1a] hover:text-[#5e6ad2] transition"
+        className="text-sm font-semibold text-[#1a1a1a] hover:text-[#ea580c] transition"
       >
         {t('brand')}
       </Link>
@@ -93,7 +93,7 @@ export default function NavBar() {
         ) : (
           <Link
             href="/login"
-            className="text-sm text-[#5e6ad2] hover:text-[#4f5ad0] transition"
+            className="text-sm text-[#ea580c] hover:text-[#c2410c] transition"
           >
             {t('signIn')}
           </Link>

@@ -61,17 +61,17 @@ export default function ErrorPage({
           fontSize: '14px',
           fontWeight: 500,
           color: '#fff',
-          backgroundColor: '#5e6ad2',
+          backgroundColor: '#ea580c',
           border: 'none',
           borderRadius: '6px',
           cursor: 'pointer',
           transition: 'background-color 150ms ease-in-out',
         }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.backgroundColor = '#4c56b0')
+          onMouseOver={(e) =>
+          (e.currentTarget.style.backgroundColor = '#c2410c')
         }
         onMouseOut={(e) =>
-          (e.currentTarget.style.backgroundColor = '#5e6ad2')
+          (e.currentTarget.style.backgroundColor = '#ea580c')
         }
       >
         Retry

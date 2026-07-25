@@ -120,7 +120,7 @@ export default function ChatBox() {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[70%] rounded-lg px-4 py-2 text-sm ${
               msg.role === 'user'
-                ? 'bg-[#5e6ad2] text-white'
+                ? 'bg-[#ea580c] text-white'
                 : 'bg-[#f8f8f8] text-[#1a1a1a]'
             }`}>
               {msg.content}
@@ -141,13 +141,13 @@ export default function ChatBox() {
           value={state.input}
           onChange={e => dispatch({ type: 'SET_INPUT', value: e.target.value })}
           placeholder={t('inputPlaceholder')}
-          className="flex-1 rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] disabled:opacity-40"
+          className="flex-1 rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] disabled:opacity-40"
           disabled={state.loading}
         />
         <button
           type="submit"
           disabled={state.loading || !state.input.trim()}
-          className="rounded-md bg-[#5e6ad2] text-white px-5 py-2 text-sm font-medium transition hover:bg-[#4f5ad0] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
+          className="rounded-md bg-[#ea580c] text-white px-5 py-2 text-sm font-medium transition hover:bg-[#c2410c] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
         >
           {t('send')}
         </button>

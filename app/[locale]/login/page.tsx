@@ -96,7 +96,7 @@ export default function LoginPage() {
               placeholder="you@example.com"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] focus:ring-1 focus:ring-[#5e6ad2] disabled:opacity-40"
+              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] disabled:opacity-40"
               disabled={loading}
             />
           </div>
@@ -116,7 +116,7 @@ export default function LoginPage() {
               placeholder={t('passwordPlaceholder')}
               required
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
-              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#5e6ad2] focus:ring-1 focus:ring-[#5e6ad2] disabled:opacity-40"
+              className="w-full rounded-md border border-[#e5e5e5] px-3 py-2 text-sm text-[#1a1a1a] outline-none transition placeholder:text-[#a0a0a0] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] disabled:opacity-40"
               disabled={loading}
             />
           </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading || !email.trim() || !password.trim()}
-            className="w-full rounded-md bg-[#5e6ad2] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#4f5ad0] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full rounded-md bg-[#ea580c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#c2410c] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none"
           >
             {loading
               ? t('processing')
@@ -149,7 +149,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setIsSignUp(false); setError(null); setMessage(null) }}
-                className="text-[#5e6ad2] hover:underline"
+                className="text-[#ea580c] hover:underline"
               >
                 {t('signIn')}
               </button>
@@ -160,7 +160,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setIsSignUp(true); setError(null); setMessage(null) }}
-                className="text-[#5e6ad2] hover:underline"
+                className="text-[#ea580c] hover:underline"
               >
                 {t('createOne')}
               </button>

@@ -8,7 +8,7 @@ import { useEffect } from 'react'
  * 覆盖根布局的错误，必须自带 {html}/{body} 标签。
  * 显示不泄漏 error.message 的英文简洁回退 UI，提供重试按钮，
  * 并在 effect 中 console.error 记录错误。
- * 内联样式遵循 Linear 风格：极简、紫色强调色 #5e6ad2。
+ * 内联样式遵循 Linear 风格：极简、暖橙强调色 #ea580c。
  */
 export default function GlobalError({
   error,
@@ -77,17 +77,17 @@ export default function GlobalError({
               fontSize: '14px',
               fontWeight: 500,
               color: '#fff',
-              backgroundColor: '#5e6ad2',
+              backgroundColor: '#ea580c',
               border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',
               transition: 'background-color 150ms ease-in-out',
             }}
             onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = '#4c56b0')
+              (e.currentTarget.style.backgroundColor = '#c2410c')
             }
             onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = '#5e6ad2')
+              (e.currentTarget.style.backgroundColor = '#ea580c')
             }
           >
             Retry
