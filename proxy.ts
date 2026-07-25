@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import { updateSession } from '@/utils/supabase/middleware'
+import { updateSession } from '@/lib/supabase/middleware'
 
 /**
  * Next.js 16 Proxy（原 Middleware）—— Supabase Auth session 自动刷新。

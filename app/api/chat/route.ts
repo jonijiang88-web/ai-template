@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { getMessages, sendMessage } from '../../_service/chat'
 import { BizException } from '../../_lib/BizException'
 import { withApiErrorHandler } from '../../_lib/api-error-handler'

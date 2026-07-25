@@ -68,7 +68,7 @@ npm run db:push  # 推送迁移至已关联的 Supabase 项目
 │   ├── auth/           # 认证回调路由
 │   ├── chat/           # 聊天页面
 │   └── login/          # 登录/注册页面
-├── utils/
+├── lib/
 │   └── supabase/       # Supabase SSR 客户端工具
 ├── supabase/
 │   └── migrations/     # 数据库迁移文件
