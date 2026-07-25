@@ -36,27 +36,32 @@ export default function LoginPage() {
       setError(null)
       setMessage(null)
 
-      const callbackPath = locale === 'en' ? '/en/chat' : '/chat'
-
-      const { error: authError } = isSignUp
-        ? await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(callbackPath)}`,
-            },
+      if (isSignUp) {
+        try {
+          const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, locale: locale === 'en' ? 'en' : 'zh-CN' }),
           })
-        : await supabase.auth.signInWithPassword({ email, password })
-
-      if (authError) {
-        setError(authError.message)
-        setLoading(false)
-        return
+          const data = await res.json()
+          if (!res.ok) {
+            setError(data.error || '注册失败')
+            setLoading(false)
+            return
+          }
+          setMessage(t('signUpSuccess'))
+          setLoading(false)
+          return
+        } catch {
+          setError('网络错误')
+          setLoading(false)
+          return
+        }
       }
 
-      if (isSignUp) {
-        // 注册成功后提示查收确认邮件
-        setMessage(t('signUpSuccess'))
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      if (authError) {
+        setError(authError.message)
         setLoading(false)
         return
       }

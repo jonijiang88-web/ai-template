@@ -32,6 +32,15 @@
     "noAccount": "No account?",
     "createOne": "Create one"
   },
+  "Email": {
+    "confirmSubject": "Confirm your email address",
+    "confirmTitle": "Confirm your email",
+    "confirmBody": "Thanks for signing up! Click the button below to confirm your email address.",
+    "confirmButton": "Confirm email",
+    "confirmFooter": "If you did not create an account, please ignore this email.",
+    "confirmSuccess": "Email confirmed! You can now sign in.",
+    "confirmError": "Invalid or expired confirmation link."
+  },
   "Chat": {
     "empty": "Start chatting!",
     "typing": "Typing...",

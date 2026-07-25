@@ -32,6 +32,15 @@
     "noAccount": "还没有账号？",
     "createOne": "创建账号"
   },
+  "Email": {
+    "confirmSubject": "确认你的邮箱地址",
+    "confirmTitle": "确认邮箱",
+    "confirmBody": "感谢注册！请点击下方按钮确认你的邮箱地址。",
+    "confirmButton": "确认邮箱",
+    "confirmFooter": "如果你没有创建账号，请忽略此邮件。",
+    "confirmSuccess": "邮箱已确认！现在可以登录了。",
+    "confirmError": "确认链接无效或已过期。"
+  },
   "Chat": {
     "empty": "开始聊天吧！",
     "typing": "正在输入...",
