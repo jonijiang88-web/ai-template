@@ -93,4 +93,70 @@ describe('withApiErrorHandler', () => {
     await wrapped(req, params)
     expect(handler).toHaveBeenCalledWith(req, params)
   })
+
+  it('无 Accept-Language 时默认返回中文错误消息', async () => {
+    // 验证：没有 Accept-Language 头时使用中文
+    const handler = vi.fn().mockRejectedValue(
+      new BizException('RATE_LIMITED', '请求太频繁，请稍后再试', 429),
+    )
+    const wrapped = withApiErrorHandler(handler)
+    const res = await wrapped()
+    const body = await res.json()
+    expect(body.error.message).toBe('请求太频繁，请稍后再试')
+  })
+
+  it('Accept-Language 为 en 时返回英文错误消息', async () => {
+    // 验证：传入 Accept-Language: en 时返回英文
+    const handler = vi.fn().mockRejectedValue(
+      new BizException('RATE_LIMITED', '请求太频繁，请稍后再试', 429),
+    )
+    const wrapped = withApiErrorHandler(handler)
+    const req = new Request('http://localhost/test', {
+      headers: { 'Accept-Language': 'en' },
+    })
+    const res = await wrapped(req)
+    const body = await res.json()
+    expect(body.error.message).toBe('Too many requests. Please try again later.')
+  })
+
+  it('不支持的 locale 回退到中文', async () => {
+    // 验证：Accept-Language 为 fr（不支持）时使用中文
+    const handler = vi.fn().mockRejectedValue(
+      new BizException('RATE_LIMITED', '请求太频繁，请稍后再试', 429),
+    )
+    const wrapped = withApiErrorHandler(handler)
+    const req = new Request('http://localhost/test', {
+      headers: { 'Accept-Language': 'fr' },
+    })
+    const res = await wrapped(req)
+    const body = await res.json()
+    expect(body.error.message).toBe('请求太频繁，请稍后再试')
+  })
+
+  it('字典中不存在的错误码回退到原始消息', async () => {
+    // 验证：CUSTOM_ERROR 不在字典中，使用 BizException 的原始消息
+    const handler = vi.fn().mockRejectedValue(
+      new BizException('CUSTOM_ERROR', '自定义错误', 400),
+    )
+    const wrapped = withApiErrorHandler(handler)
+    const req = new Request('http://localhost/test', {
+      headers: { 'Accept-Language': 'en' },
+    })
+    const res = await wrapped(req)
+    const body = await res.json()
+    expect(body.error.message).toBe('自定义错误')
+  })
+
+  it('INTERNAL_ERROR 也支持多语言', async () => {
+    // 验证：未知异常的 500 错误根据 Accept-Language 返回对应语言
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const handler = vi.fn().mockRejectedValue(new Error('db crash'))
+    const wrapped = withApiErrorHandler(handler)
+    const req = new Request('http://localhost/test', {
+      headers: { 'Accept-Language': 'en' },
+    })
+    const res = await wrapped(req)
+    const body = await res.json()
+    expect(body.error.message).toBe('Service temporarily unavailable. Please try again later.')
+  })
 })

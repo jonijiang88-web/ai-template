@@ -212,7 +212,7 @@ describe('app/api/chat 路由', () => {
       expect(body).toEqual({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'messages 必须为非空数组',
+          message: '请求参数校验失败',
         },
       })
     })
@@ -231,7 +231,7 @@ describe('app/api/chat 路由', () => {
       expect(body).toEqual({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'messages 必须为非空数组',
+          message: '请求参数校验失败',
         },
       })
     })
