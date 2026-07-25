@@ -157,13 +157,41 @@ const result = streamText({
 
 ---
 
-## 6. 本项目集成状态
+## 6. DevTools — 开发时可观测性
+
+```bash
+npm run ai-devtools
+# 打开 http://localhost:4983
+```
+
+捕获每次 AI SDK 调用的：
+- 完整输入参数和 prompt
+- 输出内容和 token 用量
+- 耗时和分步追踪
+- 多步 agent 交互的步骤链路
+
+注册方式（仅在开发环境生效）：
+
+```ts
+import { registerTelemetry } from 'ai'
+import { DevToolsTelemetry } from '@ai-sdk/devtools'
+
+if (process.env.NODE_ENV === 'development') {
+  registerTelemetry(DevToolsTelemetry())
+}
+```
+
+---
+
+## 7. 本项目集成状态
 
 | 能力 | 状态 |
 |------|------|
 | `streamText` + DeepSeek | ✅ 已集成 |
 | `useChat` 流式 UI | ✅ 已集成 |
 | 消息持久化 (Supabase) | ✅ 已集成 |
+| DevTools 可观测性 | ✅ 已集成 |
+| 内存限流 (rate-limit) | ✅ 已集成 |
 | `generateText` | ❌ 未用 |
 | `generateObject` | ❌ 未用 |
 | Tool Calling | ❌ 未用 |
