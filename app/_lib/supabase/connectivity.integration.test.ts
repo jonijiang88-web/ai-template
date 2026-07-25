@@ -16,14 +16,17 @@ const hasSupabaseEnvironment = Boolean(supabaseUrl && supabasePublishableKey)
  * 未配置本地环境变量时跳过，以免 CI 依赖远程测试项目。
  */
 describe.skipIf(!hasSupabaseEnvironment)('Supabase 远程集成', () => {
-  const supabase = createClient(supabaseUrl!, supabasePublishableKey!, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  })
+  function getSupabase() {
+    return createClient(supabaseUrl!, supabasePublishableKey!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  }
 
   it('可以访问已迁移的 messages 表', async () => {
+    const supabase = getSupabase()
     const { data, error } = await supabase
       .from('messages')
       .select('id')
@@ -36,6 +39,7 @@ describe.skipIf(!hasSupabaseEnvironment)('Supabase 远程集成', () => {
   })
 
   it('匿名请求不能插入消息', async () => {
+    const supabase = getSupabase()
     const { error } = await supabase.from('messages').insert({
       user_id: '00000000-0000-0000-0000-000000000000',
       role: 'user',
