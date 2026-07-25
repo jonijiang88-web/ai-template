@@ -12,10 +12,12 @@
     "test:watch": "vitest --watch",
     "test:integration": "vitest --run app/_lib/supabase/connectivity.integration.test.ts",
     "db:reset": "supabase db reset",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "ai-devtools": "npx @ai-sdk/devtools@latest"
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^3.0.13",
+    "@ai-sdk/devtools": "^1.0.7",
     "@ai-sdk/react": "^4.0.40",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",

@@ -3,13 +3,21 @@ import {
   convertToModelMessages,
   createUIMessageStreamResponse,
   toUIMessageStream,
+  registerTelemetry,
   type UIMessage,
 } from 'ai'
 import { deepSeek } from '@ai-sdk/deepseek'
+import { DevToolsTelemetry } from '@ai-sdk/devtools'
 import { createClient } from '@/app/_lib/supabase/server'
 import { getMessages, saveMessages, toUIMessage } from '../../_service/chat'
 import { BizException } from '../../_lib/BizException'
 import { withApiErrorHandler } from '../../_lib/api-error-handler'
+import { checkRateLimit } from '../../_lib/rate-limit'
+
+// 开发环境注册 AI SDK DevTools Telemetry
+if (process.env.NODE_ENV === 'development') {
+  registerTelemetry(DevToolsTelemetry())
+}
 
 /** 从 UIMessage 数组中提取最后一条用户消息的文本内容 */
 function extractUserText(messages: UIMessage[]): string {
@@ -53,6 +61,11 @@ async function postHandler(request?: Request) {
 
   if (authError || !user) {
     throw new BizException('UNAUTHORIZED', '未登录', 401)
+  }
+
+  // 限流：每用户每分钟最多 30 次请求
+  if (!checkRateLimit(`chat:${user.id}`, 30, 60_000)) {
+    throw new BizException('RATE_LIMITED', '请求太频繁，请稍后再试', 429)
   }
 
   if (!request) {
