@@ -12,17 +12,24 @@
     "test:watch": "vitest --watch",
     "test:integration": "vitest --run app/_lib/supabase/connectivity.integration.test.ts",
     "db:reset": "supabase db reset",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "ai-devtools": "npx @ai-sdk/devtools@latest"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.13",
+    "@ai-sdk/devtools": "^1.0.7",
+    "@ai-sdk/react": "^4.0.40",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
     "@vercel/speed-insights": "^2.0.0",
     "@vercel/analytics": "^2.0.1",
+    "ai": "^7.0.37",
     "next": "16.2.11",
     "next-intl": "^4.13.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.18.0",
     "zod": "^4.4.3"
   },

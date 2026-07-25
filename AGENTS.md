@@ -31,3 +31,67 @@ function getResend() {
 
 这条规则的例外：`NEXT_PUBLIC_` 前缀的客户端 SDK（如 Supabase 浏览器客户端），因为它们的 key 设计为公开。
 <!-- END:lessons-learned -->
+
+<!-- BEGIN:ai-sdk -->
+# Vercel AI SDK
+
+项目已集成 `ai@7.x` + `@ai-sdk/deepseek`，通过 `streamText` 流式调用 DeepSeek 模型。具体功能参考 `doc/ai-sdk.md`。
+
+关键约定：
+- `useChat` 的 **`initialMessages` prop 不可用**（v7 类型不支持），改用 `setMessages()` 加载历史
+- `UIMessage` 用 `parts` 数组替代旧的 `content` 字符串
+- `streamText` 需显式指定 Provider（如 `deepSeek('deepseek-v4-flash')`），否则默认走 AI Gateway
+- 消息持久化在 `streamText` 的 `onFinish` 回调中调用 `saveMessages()`
+- DevTools Telemetry 仅开发环境注册（`process.env.NODE_ENV === 'development'`）
+<!-- END:ai-sdk -->
+
+<!-- BEGIN:api-patterns -->
+# API 路由模式
+
+新的 API Route Handler 应遵循的模式：
+
+## 鉴权 + 限流
+```ts
+import { createClient } from '@/app/_lib/supabase/server'
+import { BizException } from '@/app/_lib/BizException'
+import { withApiErrorHandler } from '@/app/_lib/api-error-handler'
+import { checkRateLimit } from '@/app/_lib/rate-limit'
+
+async function handler() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) throw new BizException('UNAUTHORIZED', '未登录', 401)
+
+  if (!checkRateLimit(`api:${user.id}`, 30, 60_000)) {
+    throw new BizException('RATE_LIMITED', '请求太频繁', 429)
+  }
+
+  // ... 业务逻辑
+}
+
+export const GET = withApiErrorHandler(handler)
+```
+
+## 结构化错误
+```ts
+throw new BizException('ERROR_CODE', '用户可见的错误信息', 422)
+// 自动转为 { error: { code: 'ERROR_CODE', message: '...' } }
+```
+未知异常自动转为 500，不泄漏内部错误细节。
+<!-- END:api-patterns -->
+
+<!-- BEGIN:project-structure -->
+# 项目结构约定
+
+```
+app/_lib/          # 工具库（无业务逻辑）
+app/_service/      # 业务逻辑层（可测试）
+app/api/           # Route Handler（薄层，仅鉴权+转发）
+app/[locale]/      # 页面（Server Component 优先）
+  _components/     # 客户端组件（'use client'）
+doc/               # 项目文档
+```
+
+- DB 消息 ↔ UI 消息转换使用 `toUIMessage()`（`app/_service/chat.ts`）
+- 测试文件紧邻源文件：`chat.ts` + `chat.test.ts`
+<!-- END:project-structure -->
