@@ -1,87 +1,87 @@
-[![中文](https://img.shields.io/badge/中文-red?style=flat)](./README.zh.md)
+[![English](https://img.shields.io/badge/English-blue?style=flat)](./README.en.md)
 
 # AI Chat Template
 
 ![Stack](https://img.shields.io/badge/Next.js_16-000?logo=next.js) ![Stack](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase) ![Stack](https://img.shields.io/badge/DeepSeek-4F6BF4?logo=deepseek) ![Stack](https://img.shields.io/badge/Vercel-000?logo=vercel)
 
-**A production-ready AI chatbot template.** Sign up for 3 services, fill in 3 keys, go live in 30 minutes. Monthly cost: \$0.
+**一个开箱即用的 AI 聊天应用模板。** 注册三个账号、填三个 Key、30 分钟上线，月费 ¥0。
 
-## Quick Start
+## 三步上线
 
 ```bash
-# 1. Clone
+# 1. 克隆
 git clone https://github.com/jonijiang88-web/ai-template.git
 cd ai-template && npm install
 
-# 2. Configure environment
+# 2. 配置环境变量
 cp .env.example .env.local
-# Fill in your Supabase URL/Key + DeepSeek API Key
+# 填入 Supabase URL/Key + DeepSeek API Key
 
-# 3. Start
+# 3. 启动
 npm run dev
 ```
 
-## Tech Stack
+## 技术栈
 
-| Layer | Choice | Cost |
-|-------|--------|------|
-| **Framework** | Next.js 16 (App Router) | Free |
-| **Hosting** | Vercel (Hobby) | Free |
-| **Database / Auth** | Supabase | Free (500MB) |
-| **AI Model** | DeepSeek V4 (via `@ai-sdk/deepseek`) | Pay-as-you-go |
-| **Email** | Resend | Free (3K emails/mo) |
-| **Styling** | Tailwind CSS 4 + Linear Design | — |
-| **Testing** | Vitest | — |
+| 层 | 选型 | 成本 |
+|---|------|------|
+| **框架** | Next.js 16 (App Router) | 免费 |
+| **托管** | Vercel (Hobby) | 免费 |
+| **数据库 / 鉴权** | Supabase | 免费 (500MB) |
+| **AI 模型** | DeepSeek V4 (via `@ai-sdk/deepseek`) | 按量 (新用户有赠送) |
+| **邮件** | Resend | 免费 (3000封/月) |
+| **样式** | Tailwind CSS 4 + Linear 风格 | — |
+| **测试** | Vitest | — |
 
-## Features
+## 功能
 
-- ✅ **AI Chat** — Streaming via Vercel AI SDK, Markdown rendering (code blocks, tables, lists)
-- ✅ **Email Auth** — Supabase Auth + Resend confirmation emails
-- ✅ **i18n** — Chinese / English (next-intl)
-- ✅ **Full-stack Type Safety** — Zod validation, strict TypeScript
-- ✅ **Zero-cost Hosting** — Vercel Hobby + Supabase Free + Resend Free
+- ✅ **AI 聊天** — Vercel AI SDK 流式响应，支持 Markdown 渲染（代码块、表格、列表）
+- ✅ **邮箱登录** — Supabase Auth + Resend 确认邮件
+- ✅ **多语言** — 中文 / English（next-intl）
+- ✅ **全栈类型安全** — Zod 校验、TypeScript 严格模式
+- ✅ **零成本托管** — Vercel Hobby + Supabase Free + Resend Free
 
-## Scripts
+## 脚本
 
 ```bash
-npm run dev              # Development
-npm run build            # Build
-npm run start            # Start production
-npm run test             # Unit tests
-npm run test:integration # Supabase connectivity
-npm run lint             # Lint
+npm run dev              # 开发
+npm run build            # 构建
+npm run start            # 生产启动
+npm run test             # 单元测试
+npm run test:integration # Supabase 连通性测试
+npm run lint             # 代码检查
 ```
 
-## Project Structure
+## 项目结构
 
 ```
 app/
-├── _components/     # Shared UI components
-├── _lib/            # Utilities (Error handling, Supabase client)
-├── _service/        # Business logic layer
-├── api/             # Route Handlers
-│   └── chat/        # Streaming chat API (DeepSeek)
-├── auth/            # Auth callbacks
+├── _components/     # 共享 UI 组件
+├── _lib/            # 工具库（Error handling、Supabase 客户端）
+├── _service/        # 业务逻辑层
+├── api/             # Route Handler
+│   └── chat/        # 流式聊天 API（DeepSeek）
+├── auth/            # 认证回调
 ├── [locale]/
-│   ├── chat/        # Chat page (useChat hook + Markdown rendering)
-│   └── login/       # Login / Register
+│   ├── chat/        # 聊天页面（useChat hook + Markdown 渲染）
+│   └── login/       # 登录/注册
 ├── globals.css
 └── layout.tsx
 ```
 
-## Prerequisites
+## 你需要准备
 
-1. **Supabase Project** → [supabase.com](https://supabase.com) → Settings → API → Copy URL & anon key
-2. **DeepSeek API Key** → [platform.deepseek.com](https://platform.deepseek.com/api_keys) → Create key
-3. **Resend API Key** (optional) → [resend.com](https://resend.com) → API Keys
+1. **Supabase 项目** → [supabase.com](https://supabase.com) → Settings → API → 复制 URL 和 anon key
+2. **DeepSeek API Key** → [platform.deepseek.com](https://platform.deepseek.com/api_keys) → 创建 key
+3. **Resend API Key**（可选，不配也能跑）→ [resend.com](https://resend.com) → API Keys
 
-Paste them into `.env.local`.
+填到 `.env.local` 即可。
 
-## Deploy to Vercel
+## 部署到 Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/jonijiang88-web/ai-template)
 
-One-click import. Copy the same environment variables from `.env.local`.
+一键导入仓库，环境变量照搬 `.env.local`，点一下即可上线。
 
 ## License
 
