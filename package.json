@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "typecheck": "npm run typecheck:shared && npm run typecheck:mobile",
+    "typecheck:shared": "cd packages/shared && npx tsc --noEmit",
+    "typecheck:mobile": "cd mobile && npx tsc --noEmit",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

@@ -59,7 +59,7 @@ export class ApiClient {
     if (!res.ok) {
       throw new Error(`getMessages failed: ${res.status}`)
     }
-    const data: ChatHistoryResponse = await res.json()
+    const data = (await res.json()) as ChatHistoryResponse
     return (data.messages ?? []).map(toChatMessage)
   }
 

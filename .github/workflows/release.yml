@@ -27,6 +27,8 @@ jobs:
 
       - run: npm ci
 
+      - run: npm run typecheck
+
       - name: 安装 EAS CLI
         run: npm install -g eas-cli
 
