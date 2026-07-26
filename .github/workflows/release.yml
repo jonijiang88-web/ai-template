@@ -20,7 +20,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      - run: npm install
 
       - name: EAS 认证 + 构建 Android APK
         uses: expo/expo-github-action@v8
