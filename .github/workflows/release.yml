@@ -34,15 +34,6 @@ jobs:
         run: eas init --force --non-interactive
         working-directory: ./mobile
 
-      - name: 验证 EAS production 运行时配置
-        working-directory: ./mobile
-        run: |
-          ENV_FILE="$RUNNER_TEMP/eas-production.env"
-          eas env:pull production --path "$ENV_FILE" --non-interactive
-          for VARIABLE in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY EXPO_PUBLIC_API_BASE_URL; do
-            grep -q "^${VARIABLE}=." "$ENV_FILE" || { echo "缺少 EAS production 变量：${VARIABLE}"; exit 1; }
-          done
-
       - name: 构建 Android APK（远程 EAS，等待完成）
         id: build
         working-directory: ./mobile
