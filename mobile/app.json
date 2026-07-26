@@ -26,6 +26,13 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d7612a68-d518-4e9f-b517-6cd32024fa59"
+      }
+    },
+    "owner": "joniiangs-team"
   }
 }
