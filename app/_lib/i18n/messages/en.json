@@ -53,6 +53,10 @@
     "RATE_LIMITED": "Too many requests. Please try again later.",
     "INVALID_JSON": "Request body is not valid JSON",
     "INTERNAL_ERROR": "Service temporarily unavailable. Please try again later.",
-    "MESSAGE_REJECTED": "Message contains rejected content"
+    "MESSAGE_REJECTED": "Message contains rejected content",
+    "UPLOAD_INVALID_TYPE": "Unsupported file format. Supported: {types}",
+    "UPLOAD_FILE_TOO_LARGE": "File size exceeds limit (max {size}MB)",
+    "UPLOAD_FILE_REQUIRED": "Please upload an avatar image",
+    "UPLOAD_FILE_EMPTY": "Uploaded file is empty"
   }
 }

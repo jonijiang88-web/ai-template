@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/app/_lib/supabase/admin'
+import { loadMessages } from '@/app/_lib/i18n/loader'
 
 /** 公开可读的存储桶名称。 */
 const AVATARS_BUCKET = 'avatars'
@@ -23,22 +24,27 @@ export type ImageValidation = {
  *
  * @param file       - 上传的文件
  * @param validation - 校验规则
- * @returns 校验通过返回 null，否则返回错误消息
+ * @param locale     - 语言代码（zh-CN / en），用于返回翻译后的错误消息
+ * @returns 校验通过返回 null，否则返回翻译后的错误消息
  */
 export function validateImage(
   file: File,
   validation: ImageValidation = {},
+  locale: string = 'zh-CN',
 ): string | null {
   const allowedTypes = validation.allowedTypes ?? ALLOWED_MIME_TYPES
   const maxSize = validation.maxSize ?? MAX_FILE_SIZE
+  const msgs = loadMessages(locale)
 
   if (!allowedTypes.includes(file.type)) {
-    return `不支持的文件格式：${file.type}。支持 ${allowedTypes.join(', ')}`
+    const template = msgs.ApiError?.UPLOAD_INVALID_TYPE ?? 'Unsupported file format. Supported: {types}'
+    return template.replace('{types}', allowedTypes.join(', '))
   }
 
   if (file.size > maxSize) {
     const mb = maxSize / 1024 / 1024
-    return `文件大小超出限制（最大 ${mb}MB）`
+    const template = msgs.ApiError?.UPLOAD_FILE_TOO_LARGE ?? 'File size exceeds limit (max {size}MB)'
+    return template.replace('{size}', String(mb))
   }
 
   return null

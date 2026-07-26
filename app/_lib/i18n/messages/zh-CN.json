@@ -53,6 +53,10 @@
     "RATE_LIMITED": "请求太频繁，请稍后再试",
     "INVALID_JSON": "请求体不是合法的 JSON",
     "INTERNAL_ERROR": "服务暂时不可用，请稍后重试",
-    "MESSAGE_REJECTED": "消息包含敏感词"
+    "MESSAGE_REJECTED": "消息包含敏感词",
+    "UPLOAD_INVALID_TYPE": "不支持的文件格式。支持：{types}",
+    "UPLOAD_FILE_TOO_LARGE": "文件大小超出限制（最大 {size}MB）",
+    "UPLOAD_FILE_REQUIRED": "请上传头像图片",
+    "UPLOAD_FILE_EMPTY": "上传的文件为空"
   }
 }

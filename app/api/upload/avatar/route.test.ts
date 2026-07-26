@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockCreateServerClient, mockGetUser, mockUploadAvatar, mockValidateImage } = vi.hoisted(() => {
+const { mockCreateServerClient, mockGetUser, mockUploadAvatar, mockValidateImage, mockT, mockDetectLocale } = vi.hoisted(() => {
   return {
     mockCreateServerClient: vi.fn(),
     mockGetUser: vi.fn(),
     mockUploadAvatar: vi.fn(),
     mockValidateImage: vi.fn(),
+    mockT: vi.fn((_locale: string, _ns: string, key: string, fallback: string) => fallback),
+    mockDetectLocale: vi.fn(() => 'zh-CN' as const),
   }
 })
 
@@ -16,6 +18,14 @@ vi.mock('@/app/_lib/supabase/server', () => ({
 vi.mock('@/app/_service/storage', () => ({
   uploadAvatar: mockUploadAvatar,
   validateImage: mockValidateImage,
+}))
+
+vi.mock('@/app/_lib/locale', () => ({
+  detectLocaleFromRequest: mockDetectLocale,
+}))
+
+vi.mock('@/app/_lib/i18n/loader', () => ({
+  t: mockT,
 }))
 
 import { POST } from './route'

@@ -2,6 +2,8 @@ import { createClient } from '@/app/_lib/supabase/server'
 import { uploadAvatar, validateImage } from '@/app/_service/storage'
 import { BizException } from '@/app/_lib/BizException'
 import { withApiErrorHandler } from '@/app/_lib/api-error-handler'
+import { detectLocaleFromRequest } from '@/app/_lib/locale'
+import { t } from '@/app/_lib/i18n/loader'
 
 /**
  * 上传头像。
@@ -16,6 +18,8 @@ async function postHandler(request?: Request) {
     throw new BizException('UNAUTHORIZED', '未登录', 401)
   }
 
+  const locale = detectLocaleFromRequest(request)
+
   if (!request) {
     throw new BizException('INVALID_JSON', '请求体不是合法的 JSON', 400)
   }
@@ -29,15 +33,15 @@ async function postHandler(request?: Request) {
 
   const file = formData.get('file')
   if (!file || !(file instanceof File)) {
-    throw new BizException('VALIDATION_ERROR', '请上传头像图片', 400)
+    throw new BizException('VALIDATION_ERROR', t(locale, 'ApiError', 'UPLOAD_FILE_REQUIRED', '请上传头像图片'), 400)
   }
 
   if (file.size === 0) {
-    throw new BizException('VALIDATION_ERROR', '上传的文件为空', 400)
+    throw new BizException('VALIDATION_ERROR', t(locale, 'ApiError', 'UPLOAD_FILE_EMPTY', '上传的文件为空'), 400)
   }
 
-  // 校验文件类型和大小
-  const validationError = validateImage(file)
+  // 校验文件类型和大小（传入 locale 以返回翻译后的消息）
+  const validationError = validateImage(file, {}, locale)
   if (validationError) {
     throw new BizException('VALIDATION_ERROR', validationError, 400)
   }
