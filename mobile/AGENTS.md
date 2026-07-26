@@ -25,21 +25,15 @@ npx expo start --web
 npx expo start
 ```
 
-## 环境变量
+## 运行时配置
 
-复制模板并填入真实值：
+移动端公开配置维护在 `src/lib/runtime-config.ts`，未提供环境变量时使用内置生产配置。
+
+本地联调可创建 `.env.local` 覆盖 API 地址：
 
 ```bash
-cp .env.example .env.local
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:3000
 ```
-
-关键变量：
-
-| 变量 | 说明 |
-|------|------|
-| `EXPO_PUBLIC_SUPABASE_URL` | Supabase 项目地址 |
-| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key |
-| `EXPO_PUBLIC_API_BASE_URL` | Next.js 后端地址（真机调试时需填电脑局域网 IP，如 `http://192.168.1.100:3000`） |
 
 ## 手动发版
 
@@ -68,10 +62,6 @@ npx eas init
 #    加到 GitHub 仓库 Settings → Secrets and variables → Actions：
 #    - EXPO_TOKEN: （Expo Access Token）
 
-# 3. 在 Expo Dashboard 的项目 production 环境配置以下变量：
-#    - EXPO_PUBLIC_SUPABASE_URL
-#    - EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-#    - EXPO_PUBLIC_API_BASE_URL: https://ai-template.jonijiang.cc
 ```
 
 ## 已知问题

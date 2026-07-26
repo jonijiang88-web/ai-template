@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { Stack, useRouter, useSegments } from 'expo-router'
-import { ActivityIndicator, Text, View, StyleSheet } from 'react-native'
+import { ActivityIndicator, View, StyleSheet } from 'react-native'
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext'
 import { designTokens } from '@ai-template/shared'
 
-const { color, fontSize, spacing } = designTokens
+const { color } = designTokens
 
 /**
  * 根布局 —— 包裹 AuthProvider，添加路由守卫。
@@ -39,7 +39,7 @@ export default function RootLayout() {
  * 路由守卫 —— 未登录时重定向到 /login。
  */
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, configurationError } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const segments = useSegments()
 
@@ -64,15 +64,6 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (configurationError) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorTitle}>应用配置不可用</Text>
-        <Text style={styles.errorMessage}>{configurationError}</Text>
-      </View>
-    )
-  }
-
   return <>{children}</>
 }
 
@@ -82,17 +73,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: color.background,
-  },
-  errorTitle: {
-    color: color.foreground,
-    fontSize: fontSize.label,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  errorMessage: {
-    color: color.muted,
-    fontSize: fontSize.body,
-    paddingHorizontal: spacing.xl,
-    textAlign: 'center',
   },
 })

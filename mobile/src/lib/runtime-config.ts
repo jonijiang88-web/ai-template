@@ -5,26 +5,20 @@ export interface RuntimeConfig {
   apiBaseUrl: string
 }
 
-/** 读取并校验 Expo 在构建时注入的公开环境变量。 */
+const runtimeConfig: RuntimeConfig = {
+  supabaseUrl: 'https://auuhpxgbaniywinqfoah.supabase.co',
+  supabasePublishableKey: 'sb_publishable_bX1Nb2IaGuG_ChR5-kZfCQ_T4Ev2wSb',
+  apiBaseUrl: 'https://ai-template.jonijiang.cc',
+}
+
+/** 返回本地环境变量优先、内置配置兜底的公开运行时配置。 */
 export function getRuntimeConfig(
   environment: Record<string, string | undefined> = process.env,
 ): RuntimeConfig {
-  const supabaseUrl = environment.EXPO_PUBLIC_SUPABASE_URL
-  const supabasePublishableKey = environment.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  const apiBaseUrl = environment.EXPO_PUBLIC_API_BASE_URL
-  const missingVariables = [
-    !supabaseUrl && 'EXPO_PUBLIC_SUPABASE_URL',
-    !supabasePublishableKey && 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
-    !apiBaseUrl && 'EXPO_PUBLIC_API_BASE_URL',
-  ].filter(Boolean)
-
-  if (missingVariables.length > 0) {
-    throw new Error(`缺少运行时配置：${missingVariables.join('、')}`)
-  }
-
   return {
-    supabaseUrl: supabaseUrl!,
-    supabasePublishableKey: supabasePublishableKey!,
-    apiBaseUrl: apiBaseUrl!,
+    supabaseUrl: environment.EXPO_PUBLIC_SUPABASE_URL || runtimeConfig.supabaseUrl,
+    supabasePublishableKey:
+      environment.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || runtimeConfig.supabasePublishableKey,
+    apiBaseUrl: environment.EXPO_PUBLIC_API_BASE_URL || runtimeConfig.apiBaseUrl,
   }
 }
