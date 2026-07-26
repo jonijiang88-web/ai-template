@@ -20,14 +20,14 @@
     "ai-devtools": "npx @ai-sdk/devtools@latest"
   },
   "dependencies": {
-    "@ai-template/shared": "*",
     "@ai-sdk/deepseek": "^3.0.13",
     "@ai-sdk/devtools": "^1.0.7",
     "@ai-sdk/react": "^4.0.40",
+    "@ai-template/shared": "*",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
-    "@vercel/speed-insights": "^2.0.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.37",
     "next": "16.2.11",
     "next-intl": "^4.13.4",
@@ -39,6 +39,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@swc/helpers": "^0.5.23",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
