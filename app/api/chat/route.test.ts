@@ -111,7 +111,7 @@ describe('app/api/chat 路由', () => {
     it('未登录时返回 401 及结构化错误', async () => {
       mockCreateServerClient.mockResolvedValue(createMockSupabaseClient(null))
 
-      const res = await GET()
+      const res = await GET(new Request('http://localhost/api/chat'))
 
       // 验证：状态码为 401
       expect(res.status).toBe(401)
@@ -131,7 +131,7 @@ describe('app/api/chat 路由', () => {
       ]
       mockGetMessages.mockResolvedValue(fakeRecords)
 
-      const res = await GET()
+      const res = await GET(new Request('http://localhost/api/chat'))
 
       // 验证：状态码为 200
       expect(res.status).toBe(200)
@@ -143,17 +143,18 @@ describe('app/api/chat 路由', () => {
       const body = await res.json()
       // 验证：响应包含 messages 数组，且每条消息有 parts 字段（UIMessage 格式）
       expect(body).toHaveProperty('messages')
+      // 验证：响应包含一条与模拟记录对应的消息
+      expect(body.messages).toHaveLength(1)
+      // 验证：每条消息包含 UIMessage 必备的 parts 字段
+      expect(body.messages[0]).toHaveProperty('parts')
+      // 验证：messages 字段为数组
       expect(Array.isArray(body.messages)).toBe(true)
-      if (body.messages.length > 0) {
-        // 验证：每条消息包含 UIMessage 必备的 parts 字段
-        expect(body.messages[0]).toHaveProperty('parts')
-      }
     })
 
     it('getUser 返回 error 时视为未登录', async () => {
       mockCreateServerClient.mockResolvedValue(createMockSupabaseClient(null))
 
-      const res = await GET()
+      const res = await GET(new Request('http://localhost/api/chat'))
 
       // 验证：状态码为 401
       expect(res.status).toBe(401)

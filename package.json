@@ -2,6 +2,10 @@
   "name": "ai-template",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "mobile"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,6 +20,7 @@
     "ai-devtools": "npx @ai-sdk/devtools@latest"
   },
   "dependencies": {
+    "@ai-template/shared": "*",
     "@ai-sdk/deepseek": "^3.0.13",
     "@ai-sdk/devtools": "^1.0.7",
     "@ai-sdk/react": "^4.0.40",

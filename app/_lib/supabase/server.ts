@@ -9,15 +9,21 @@ import { cookies } from 'next/headers'
  * Cookie 写入会交由 proxy.ts 完成，避免 Next.js 渲染阶段的写入异常。
  * 使用 NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY 初始化。
  *
+ * @param accessToken - 可选的 Bearer Token，用于移动端请求的 RLS 数据访问
  * @returns Supabase 服务端客户端实例（Route Handler 支持 Cookie 写入）
  */
-export async function createClient() {
+export async function createClient(accessToken?: string) {
   const cookieStore = await cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      global: {
+        headers: accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {},
+      },
       cookies: {
         getAll() {
           return cookieStore.getAll()

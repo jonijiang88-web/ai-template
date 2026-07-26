@@ -1,7 +1,10 @@
-import { createClient } from '@/app/_lib/supabase/server'
 import { uploadAvatar, validateImage } from '@/app/_service/storage'
 import { BizException } from '@/app/_lib/BizException'
 import { withApiErrorHandler } from '@/app/_lib/api-error-handler'
+import {
+  type AuthenticatedRequestContext,
+  withAuthenticatedApiHandler,
+} from '@/app/_lib/supabase/auth'
 import { detectLocaleFromRequest } from '@/app/_lib/locale'
 import { t } from '@/app/_lib/i18n/loader'
 
@@ -10,23 +13,16 @@ import { t } from '@/app/_lib/i18n/loader'
  * 接受 multipart/form-data，字段名为 file。
  * 需登录，仅支持 jpeg/png/webp/gif，最大 5MB。
  */
-async function postHandler(request?: Request) {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    throw new BizException('UNAUTHORIZED', '未登录', 401)
-  }
+async function postHandler(
+  { user }: AuthenticatedRequestContext,
+  request: Request,
+) {
 
   const locale = detectLocaleFromRequest(request)
 
-  if (!request) {
-    throw new BizException('INVALID_JSON', '请求体不是合法的 JSON', 400)
-  }
-
   let formData: FormData
   try {
-    formData = await request.formData()
+    formData = (await request.formData()) as unknown as FormData
   } catch {
     throw new BizException('INVALID_JSON', '请求体不是合法的 multipart/form-data', 400)
   }
@@ -52,4 +48,4 @@ async function postHandler(request?: Request) {
 }
 
 /** POST /api/upload/avatar — 上传头像，需登录 */
-export const POST = withApiErrorHandler(postHandler)
+export const POST = withApiErrorHandler(withAuthenticatedApiHandler(postHandler))

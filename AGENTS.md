@@ -100,3 +100,13 @@ doc/               # 项目文档
 - DB 消息 ↔ UI 消息转换使用 `toUIMessage()`（`app/_service/chat.ts`）
 - 测试文件紧邻源文件：`chat.ts` + `chat.test.ts`
 <!-- END:project-structure -->
+
+<!-- BEGIN:cross-platform-sharing -->
+# 跨端共享约定
+
+Web 与移动端可复用的代码统一放在 `packages/shared/`，不得为同类用途新增平行共享包。
+
+- 设计令牌、类型定义、API 客户端、常量和无平台依赖的工具函数放在 `packages/shared/src/`。
+- Web 通过 `@ai-template/shared` 或其导出的样式资源消费；移动端通过同一 workspace 包消费。
+- Web 或移动端专有的 UI 组件、路由、平台 SDK 初始化不得放入共享包。
+<!-- END:cross-platform-sharing -->

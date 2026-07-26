@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
+import { designTokenCss } from '@ai-template/shared'
 import "../globals.css";
 import NavBar from "../_components/NavBar";
 import { hasLocale, locales } from '../_lib/i18n/routing'
@@ -60,6 +61,9 @@ export default async function LocaleLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
+      <head>
+        <style>{designTokenCss}</style>
+      </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <NavBar />

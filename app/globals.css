@@ -1,18 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --panel: #f8f8f8;
-  --muted: #6b6b6b;
-  --placeholder: #a0a0a0;
-  --border: #e5e5e5;
-  --accent: #c2410c;
-  --accent-hover: #9a3412;
-  --success: #22c55e;
-  --danger: #ef4444;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
