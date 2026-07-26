@@ -17,11 +17,9 @@ import type { ChatMessage } from '@ai-template/shared'
 import { designTokens } from '@ai-template/shared'
 import { useAuth } from '../src/contexts/AuthContext'
 import { canSendChatMessage } from '../src/lib/chat-state'
+import { getRuntimeConfig } from '../src/lib/runtime-config'
 import { MarkdownMessage } from '../src/components/MarkdownMessage'
 
-/** API 基础地址，通过环境变量配置，默认指向本地开发服务器 */
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000'
 const { color, fontSize, radius, spacing } = designTokens
 
 /**
@@ -36,7 +34,7 @@ const { color, fontSize, radius, spacing } = designTokens
 export default function ChatScreen() {
   const { session } = useAuth()
   const [apiClient] = useState(
-    () => new ApiClient(API_BASE_URL, session?.access_token ?? null),
+    () => new ApiClient(getRuntimeConfig().apiBaseUrl, session?.access_token ?? null),
   )
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')

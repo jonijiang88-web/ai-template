@@ -67,8 +67,11 @@ npx eas init
 # 2. 生成 GitHub Token（Expo Dashboard → Account → Access Tokens）
 #    加到 GitHub 仓库 Settings → Secrets and variables → Actions：
 #    - EXPO_TOKEN: （Expo Access Token）
+
+# 3. 在 Expo Dashboard 的项目 production 环境配置以下变量：
+#    - EXPO_PUBLIC_SUPABASE_URL
+#    - EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 #    - EXPO_PUBLIC_API_BASE_URL: https://ai-template.jonijiang.cc
-#    - NEXT_PUBLIC_SITE_URL: https://ai-template.jonijiang.cc
 ```
 
 ## 已知问题

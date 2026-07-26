@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { supabase } from '../lib/supabase'
+import { getSupabaseClient } from '../lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
 
 /**
@@ -12,6 +12,8 @@ interface AuthContextType {
   session: Session | null
   /** 是否正在加载初始状态 */
   loading: boolean
+  /** 运行时配置错误 */
+  configurationError: string | null
   /** 邮箱密码登录 */
   signIn: (email: string, password: string) => Promise<void>
   /** 邮箱密码注册 */
@@ -30,9 +32,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [configurationError] = useState<string | null>(() => {
+    try {
+      getSupabaseClient()
+      return null
+    } catch (error) {
+      return error instanceof Error ? error.message : '应用配置不可用'
+    }
+  })
+  const [loading, setLoading] = useState(() => configurationError === null)
 
   useEffect(() => {
+    if (configurationError) return
+
+    const supabase = getSupabaseClient()
     // 恢复持久化的 session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -47,22 +60,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     return () => listener.subscription.unsubscribe()
-  }, [])
+  }, [configurationError])
 
   /** 邮箱密码登录 */
   const signIn = async (email: string, password: string) => {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
   }
 
   /** 邮箱密码注册 */
   const signUp = async (email: string, password: string) => {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
   }
 
   /** 退出登录 */
   const signOut = async () => {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     setUser(null)
@@ -70,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, configurationError, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   )
