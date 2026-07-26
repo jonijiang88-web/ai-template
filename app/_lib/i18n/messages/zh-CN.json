@@ -34,7 +34,6 @@
   },
   "Email": {
     "confirmSubject": "确认你的邮箱地址",
-    "confirmTitle": "确认邮箱",
     "confirmBody": "感谢注册！请点击下方按钮确认你的邮箱地址。",
     "confirmButton": "确认邮箱",
     "confirmFooter": "如果你没有创建账号，请忽略此邮件。",
@@ -47,5 +46,17 @@
     "inputPlaceholder": "输入消息...",
     "send": "发送",
     "sendFailed": "出错了，请重试"
+  },
+  "ApiError": {
+    "UNAUTHORIZED": "未登录",
+    "VALIDATION_ERROR": "请求参数校验失败",
+    "RATE_LIMITED": "请求太频繁，请稍后再试",
+    "INVALID_JSON": "请求体不是合法的 JSON",
+    "INTERNAL_ERROR": "服务暂时不可用，请稍后重试",
+    "MESSAGE_REJECTED": "消息包含敏感词",
+    "UPLOAD_INVALID_TYPE": "不支持的文件格式。支持：{types}",
+    "UPLOAD_FILE_TOO_LARGE": "文件大小超出限制（最大 {size}MB）",
+    "UPLOAD_FILE_REQUIRED": "请上传头像图片",
+    "UPLOAD_FILE_EMPTY": "上传的文件为空"
   }
 }

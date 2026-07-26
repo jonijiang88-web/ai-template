@@ -8,8 +8,11 @@ import {
 } from 'ai'
 import { deepSeek } from '@ai-sdk/deepseek'
 import { DevToolsTelemetry } from '@ai-sdk/devtools'
-import { createClient } from '@/app/_lib/supabase/server'
 import { getMessages, saveMessages, toUIMessage } from '../../_service/chat'
+import {
+  type AuthenticatedRequestContext,
+  withAuthenticatedApiHandler,
+} from '../../_lib/supabase/auth'
 import { BizException } from '../../_lib/BizException'
 import { withApiErrorHandler } from '../../_lib/api-error-handler'
 import { checkRateLimit } from '../../_lib/rate-limit'
@@ -37,13 +40,7 @@ function extractUserText(messages: UIMessage[]): string {
  * 获取聊天消息列表（需登录）。
  * 转为前端可用的 UIMessage 数组。
  */
-async function getHandler() {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    throw new BizException('UNAUTHORIZED', '未登录', 401)
-  }
+async function getHandler({ supabase, user }: AuthenticatedRequestContext) {
 
   const records = await getMessages(supabase, user.id)
   const messages = records.map(toUIMessage)
@@ -55,21 +52,14 @@ async function getHandler() {
  * 使用 DeepSeek 模型生成回复，将结果流式返回客户端，
  * 完成后将对话持久化到 Supabase。
  */
-async function postHandler(request?: Request) {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    throw new BizException('UNAUTHORIZED', '未登录', 401)
-  }
+async function postHandler(
+  { supabase, user }: AuthenticatedRequestContext,
+  request: Request,
+) {
 
   // 限流：每用户每分钟最多 30 次请求
   if (!checkRateLimit(`chat:${user.id}`, 30, 60_000)) {
     throw new BizException('RATE_LIMITED', '请求太频繁，请稍后再试', 429)
-  }
-
-  if (!request) {
-    throw new BizException('INVALID_JSON', '请求体不是合法的 JSON', 400)
   }
 
   let body: { messages: UIMessage[] }
@@ -103,7 +93,7 @@ async function postHandler(request?: Request) {
 }
 
 /** GET /api/chat — 获取聊天历史，需登录，返回 UIMessage 数组 */
-export const GET = withApiErrorHandler(getHandler)
+export const GET = withApiErrorHandler(withAuthenticatedApiHandler(getHandler))
 
 /** POST /api/chat — 流式聊天，需登录，使用 DeepSeek 生成回复 */
-export const POST = withApiErrorHandler(postHandler)
+export const POST = withApiErrorHandler(withAuthenticatedApiHandler(postHandler))

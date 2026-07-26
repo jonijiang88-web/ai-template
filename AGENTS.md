@@ -78,6 +78,11 @@ throw new BizException('ERROR_CODE', '用户可见的错误信息', 422)
 // 自动转为 { error: { code: 'ERROR_CODE', message: '...' } }
 ```
 未知异常自动转为 500，不泄漏内部错误细节。
+
+## 错误消息多语言
+API 错误消息根据 `Accept-Language` 头自动切换中/英。
+新增错误码时需同时在 `app/_lib/api-error-handler.ts` 的 `errorMessages` 字典中添加翻译。
+详细规范见 `doc/i18n.md`。
 <!-- END:api-patterns -->
 
 <!-- BEGIN:project-structure -->
@@ -95,3 +100,13 @@ doc/               # 项目文档
 - DB 消息 ↔ UI 消息转换使用 `toUIMessage()`（`app/_service/chat.ts`）
 - 测试文件紧邻源文件：`chat.ts` + `chat.test.ts`
 <!-- END:project-structure -->
+
+<!-- BEGIN:cross-platform-sharing -->
+# 跨端共享约定
+
+Web 与移动端可复用的代码统一放在 `packages/shared/`，不得为同类用途新增平行共享包。
+
+- 设计令牌、类型定义、API 客户端、常量和无平台依赖的工具函数放在 `packages/shared/src/`。
+- Web 通过 `@ai-template/shared` 或其导出的样式资源消费；移动端通过同一 workspace 包消费。
+- Web 或移动端专有的 UI 组件、路由、平台 SDK 初始化不得放入共享包。
+<!-- END:cross-platform-sharing -->

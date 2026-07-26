@@ -13,6 +13,8 @@ export default defineConfig({
     include: [
       'app/**/*.test.ts',
       'app/**/*.test.tsx',
+      'mobile/**/*.test.ts',
+      'packages/**/*.test.ts',
     ],
   },
 })
