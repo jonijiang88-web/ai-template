@@ -51,9 +51,11 @@ jobs:
       - name: 下载 APK
         working-directory: ./mobile
         run: |
-          eas build:download --build-id "${{ steps.build.outputs.build_id }}" --non-interactive
-          APK_PATH=$(find . -maxdepth 1 -type f -name '*.apk' -print -quit)
+          DOWNLOAD_JSON=$(eas build:download --build-id "${{ steps.build.outputs.build_id }}" --json)
+          echo "$DOWNLOAD_JSON"
+          APK_PATH=$(echo "$DOWNLOAD_JSON" | jq -r '.path // empty')
           test -n "$APK_PATH"
+          test -f "$APK_PATH"
           mv "$APK_PATH" "$GITHUB_WORKSPACE/app-release.apk"
           test -s "$GITHUB_WORKSPACE/app-release.apk"
 
