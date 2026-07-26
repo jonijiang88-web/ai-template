@@ -22,36 +22,33 @@ jobs:
           node-version: 22
           cache: npm
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - run: npm install
 
       - name: 安装 EAS CLI
         run: npm install -g eas-cli
 
-      # 以下命令需在 mobile 目录下执行（eas.json / app.json 在那里）
-      - name: EAS 项目初始化（Robot 账号需要）
+      - name: EAS 项目初始化
         run: eas init --force --non-interactive
         working-directory: ./mobile
 
-      - name: 构建 Android APK
-        run: eas build --platform android --profile production --non-interactive --no-wait
+      - name: 本地构建 APK
+        run: eas build --platform android --profile production --local --non-interactive
         working-directory: ./mobile
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
 
-  release:
-    needs: build-android
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 创建 Release
+      - name: 上传 APK 到 Release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
+          files: mobile/*.apk
           body: |
             ## 变更内容
 
