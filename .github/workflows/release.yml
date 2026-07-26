@@ -27,11 +27,14 @@ jobs:
       - name: 安装 EAS CLI
         run: npm install -g eas-cli
 
+      # 以下命令需在 mobile 目录下执行（eas.json / app.json 在那里）
       - name: EAS 项目初始化（Robot 账号需要）
         run: eas init --force --non-interactive
+        working-directory: ./mobile
 
       - name: 构建 Android APK
         run: eas build --platform android --profile production --non-interactive --no-wait
+        working-directory: ./mobile
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
