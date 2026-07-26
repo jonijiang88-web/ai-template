@@ -17,6 +17,7 @@ import type { ChatMessage } from '@ai-template/shared'
 import { designTokens } from '@ai-template/shared'
 import { useAuth } from '../src/contexts/AuthContext'
 import { canSendChatMessage } from '../src/lib/chat-state'
+import { MarkdownMessage } from '../src/components/MarkdownMessage'
 
 /** API 基础地址，通过环境变量配置，默认指向本地开发服务器 */
 const API_BASE_URL =
@@ -159,14 +160,16 @@ export default function ChatScreen() {
                 item.role === 'user' ? styles.userBubble : styles.assistantBubble,
               ]}
             >
-              <Text style={item.role === 'user' ? styles.userText : styles.assistantText}>
-                {item.content}
-                {isStreaming &&
-                  item.role === 'assistant' &&
-                  item.content === '' && (
+              {item.role === 'assistant' ? (
+                <>
+                  <MarkdownMessage content={item.content} />
+                  {isStreaming && item.content === '' && (
                     <Text style={styles.cursor}>▊</Text>
                   )}
-              </Text>
+                </>
+              ) : (
+                <Text style={styles.userText}>{item.content}</Text>
+              )}
             </View>
           )}
         />
@@ -254,11 +257,6 @@ const styles = StyleSheet.create({
   },
   userText: {
     color: color.background,
-    fontSize: fontSize.body,
-    lineHeight: 22,
-  },
-  assistantText: {
-    color: color.foreground,
     fontSize: fontSize.body,
     lineHeight: 22,
   },
