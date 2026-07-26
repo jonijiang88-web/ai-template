@@ -25,6 +25,14 @@ jobs:
       - name: 安装 EAS CLI
         run: npm install -g eas-cli
 
+      - name: 调试 — 检查 EXPO_TOKEN 是否生效
+        run: |
+          echo "EXPO_TOKEN 长度: ${#EXPO_TOKEN}"
+          echo "EXPO_TOKEN 前8位: ${EXPO_TOKEN:0:8}..."
+          npx eas whoami
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
       - name: 构建 Android APK
         run: eas build --platform android --profile production --non-interactive --no-wait
         env:
