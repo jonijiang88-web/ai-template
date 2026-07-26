@@ -15,12 +15,8 @@ concurrency:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    environment: Production
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
-      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-      EXPO_PUBLIC_API_BASE_URL: ${{ vars.EXPO_PUBLIC_API_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,18 +33,6 @@ jobs:
       - name: EAS 项目初始化
         run: eas init --force --non-interactive
         working-directory: ./mobile
-
-      - name: 生成 Expo 构建环境文件
-        working-directory: ./mobile
-        run: |
-          for VARIABLE in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY EXPO_PUBLIC_API_BASE_URL; do
-            test -n "${!VARIABLE}" || { echo "缺少 GitHub Environment 变量：${VARIABLE}"; exit 1; }
-          done
-          {
-            printf 'EXPO_PUBLIC_SUPABASE_URL=%s\n' "$EXPO_PUBLIC_SUPABASE_URL"
-            printf 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
-            printf 'EXPO_PUBLIC_API_BASE_URL=%s\n' "$EXPO_PUBLIC_API_BASE_URL"
-          } > .env.local
 
       - name: 构建 Android APK（远程 EAS，等待完成）
         id: build
